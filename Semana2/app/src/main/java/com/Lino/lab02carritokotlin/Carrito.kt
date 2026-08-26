@@ -1,6 +1,6 @@
 package com.Lino.lab02carritokotlin
 
-abstract class ProductoPOO(
+abstract class Producto(
     val nombre: String,
     val precio: Double,
     var cantidad: Int
@@ -13,7 +13,7 @@ abstract class ProductoPOO(
 }
 class ProductoElectronico(
     nombre: String, precio: Double, cantidad: Int, val garantiaMeses: Int
-) : ProductoPOO(nombre, precio, cantidad) {
+) : Producto(nombre, precio, cantidad) {
     override fun calcularImporte(): Double = precio * cantidad
     override fun mostrarInfo(): String {
         return super.mostrarInfo() + "  (Garantia: $garantiaMeses meses)"
@@ -21,11 +21,11 @@ class ProductoElectronico(
 }
 class ProductoAccesorio(
     nombre: String, precio: Double, cantidad: Int
-) : ProductoPOO(nombre, precio, cantidad) {
+) : Producto(nombre, precio, cantidad) {
     override fun calcularImporte(): Double = precio * cantidad
 }
 class CarritoPOO {
-    private val productos = mutableListOf<ProductoPOO>()
+    private val productos = mutableListOf<Producto>()
     fun calcularSubtotal(): Double = productos.sumOf { it.calcularImporte() }
     fun calcularIGV(subtotal: Double): Double = subtotal * 0.18
     fun calcularTotal(subtotal: Double, igv: Double): Double = subtotal + igv
@@ -39,10 +39,10 @@ class CarritoPOO {
         productos.forEachIndexed { i, p -> println("${i + 1}. ${p.mostrarInfo()}") }
         println("-----------------------------------------------------")
     }
-    fun productoMasCaro(): ProductoPOO? = productos.maxByOrNull { it.precio }
+    fun productoMasCaro(): Producto? = productos.maxByOrNull { it.precio }
     fun cantidadProductos(): Int = productos.size
 
-    fun agregar(producto: ProductoPOO) {
+    fun agregar(producto: Producto) {
         productos.add(producto)
         println("Producto agregado: ${producto.nombre}")
     }
