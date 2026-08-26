@@ -1,5 +1,7 @@
 package com.Lino.lab02carritokotlin
 
+import java.util.Scanner
+
 abstract class Producto(
     val nombre: String,
     val precio: Double,
@@ -56,83 +58,117 @@ class CarritoPOO {
         productos.removeIf { it.nombre == nombre }
     }
 }
-
-
 fun main() {
-    val scanner = java.util.Scanner(System.`in`)
+    val scanner = Scanner(System.`in`)
+
+    // 1. CATÁLOGO BASE DE LA TIENDA (5 Electrónicos y 5 Accesorios)
+    val catalogo = listOf(
+        // Electrónicos (Nombre, Precio, Garantía base)
+        ProductoElectronico("Laptop HP", 2500.0, 1, garantiaMeses = 12),
+        ProductoElectronico("Monitor Samsung 24", 650.0, 1, garantiaMeses = 24),
+        ProductoElectronico("Teclado Mecanico ASUS", 350.0, 1, garantiaMeses = 12),
+        ProductoElectronico("Tablet Lenovo", 800.0, 1, garantiaMeses = 6),
+        ProductoElectronico("Consola PlayStation 5", 2800.0, 1, garantiaMeses = 12),
+
+        // Accesorios (Nombre, Precio)
+        ProductoAccesorio("Mouse Logitech", 45.5, 1),
+        ProductoAccesorio("Audifonos Razer", 180.0, 1),
+        ProductoAccesorio("USB Kingston 64GB", 25.0, 1),
+        ProductoAccesorio("Pad Mouse Gamer", 35.0, 1),
+        ProductoAccesorio("Soporte para Laptop", 60.0, 1)
+    )
+
+    val carrito = CarritoPOO()
 
     println("=========================================")
     println("   CARRITO DE COMPRAS - TIENDA TECSUP    ")
     println("=========================================")
 
-    print("Ingrese el nombre del cliente: ")
+    print("Ingrese su nombre (Cliente): ")
     val nombreCliente = scanner.nextLine()
-    val carrito = CarritoPOO()
+    println("\n¡Bienvenido/a $nombreCliente!")
 
-    print("¿Cuántos productos desea ingresar al carrito?: ")
-    val totalIngresos = scanner.nextInt()
-    scanner.nextLine()
+    // 2. MOSTRAR CATÁLOGO DISPONIBLE
+    println("\n----------------- CATÁLOGO DE PRODUCTOS -----------------")
+    catalogo.forEachIndexed { i, p ->
+        val tipo = if (p is ProductoElectronico) "Electrónico (Garantía: ${p.garantiaMeses} meses)" else "Accesorio"
+        println("${i + 1}. %-25s - S/ %8.2f [%s]".format(p.nombre, p.precio, tipo))
+    }
+    println("---------------------------------------------------------")
 
-    for (i in 1..totalIngresos) {
-        println("\n--- Producto #$i ---")
-        print("Tipo (1: Electrónico, 2: Accesorio): ")
-        val tipo = scanner.nextInt()
-        scanner.nextLine()
+    // 3. SELECCIÓN DE PRODUCTOS POR EL CLIENTE
+    print("\n¿Cuántos productos diferentes desea agregar al carrito?: ")
+    val totalSelecciones = scanner.nextInt()
+    scanner.nextLine() // Limpiar búfer
 
-        print("Nombre: ")
-        val nombre = scanner.nextLine()
+    for (i in 1..totalSelecciones) {
+        println("\n--- Selección #$i ---")
+        print("Ingrese el número del producto (1 a 10): ")
+        val opcion = scanner.nextInt()
+        scanner.nextLine() // Limpiar búfer
 
-        print("Precio (S/): ")
-        val precio = scanner.nextDouble()
+        if (opcion in 1..catalogo.size) {
+            val productoElegido = catalogo[opcion - 1]
 
-        print("Cantidad: ")
-        val cantidad = scanner.nextInt()
+            print("Ingrese la cantidad para '${productoElegido.nombre}': ")
+            val cantidad = scanner.nextInt()
+            scanner.nextLine() // Limpiar búfer
 
-        if (tipo == 1) {
-            print("Meses de garantía: ")
-            val garantia = scanner.nextInt()
-
-            carrito.agregar(ProductoElectronico(nombre, precio, cantidad, garantia))
+            // Instanciamos el producto con el precio fijo del catálogo y la cantidad elegida
+            if (productoElegido is ProductoElectronico) {
+                carrito.agregar(ProductoElectronico(productoElegido.nombre, productoElegido.precio, cantidad, productoElegido.garantiaMeses))
+            } else {
+                carrito.agregar(ProductoAccesorio(productoElegido.nombre, productoElegido.precio, cantidad))
+            }
         } else {
-            carrito.agregar(ProductoAccesorio(nombre, precio, cantidad))
+            println("Opción no válida. Se omitió esta selección.")
         }
     }
 
     println()
     carrito.mostrarDetalle()
 
+    // 4. BÚSQUEDA INTERACTIVA EN EL CARRITO
     println()
-    print("Ingrese el nombre del producto que desea buscar: ")
+    print("¿Desea buscar un producto en su carrito? (Escriba el nombre o presione Enter para omitir): ")
     val nombreBuscar = scanner.nextLine()
-    val encontrado = carrito.buscarProducto(nombreBuscar)
-    if (encontrado != null) {
-        println("Producto encontrado: ${encontrado.nombre} - S/ ${String.format("%.2f", encontrado.precio)}")
-    } else {
-        println("Producto no encontrado")
+    if (nombreBuscar.isNotBlank()) {
+        val encontrado = carrito.buscarProducto(nombreBuscar)
+        if (encontrado != null) {
+            println("-> Producto encontrado en tu carrito: ${encontrado.nombre} - S/ ${String.format("%.2f", encontrado.precio)}")
+        } else {
+            println("-> El producto '$nombreBuscar' no está en tu carrito.")
+        }
     }
 
+    // 5. ELIMINACIÓN INTERACTIVA EN EL CARRITO
     println()
-    print("Ingrese el nombre del producto que desea eliminar: ")
+    print("¿Desea eliminar algún producto del carrito antes de pagar? (Escriba el nombre o Enter para omitir): ")
     val nombreEliminar = scanner.nextLine()
-    carrito.eliminarProducto(nombreEliminar)
-    println("Producto eliminado: $nombreEliminar")
-    println()
-    carrito.mostrarDetalle()
+    if (nombreEliminar.isNotBlank()) {
+        carrito.eliminarProducto(nombreEliminar)
+        println("-> Se eliminó '$nombreEliminar' del carrito.")
+        println()
+        carrito.mostrarDetalle()
+    }
 
-    println("Cantidad de productos : ${carrito.cantidadProductos()}")
+    // 6. BOLETA FINAL Y CÁLCULOS
+    println("\n============== BOLETA DE VENTA ==============")
+    println("Cliente: $nombreCliente")
+    println("Cantidad de productos distintos: ${carrito.cantidadProductos()}")
 
     val subtotal = carrito.calcularSubtotal()
     val igv = carrito.calcularIGV(subtotal)
     val total = carrito.calcularTotal(subtotal, igv)
 
-    println(String.format("%-22s: S/ %8.2f", "Subtotal", subtotal))
-    println(String.format("%-22s: S/ %8.2f", "IGV (18%)", igv))
-    println(String.format("%-22s: S/ %8.2f", "TOTAL A PAGAR", total))
+    println(String.format("%-25s: S/ %8.2f", "Subtotal", subtotal))
+    println(String.format("%-25s: S/ %8.2f", "IGV (18%)", igv))
+    println(String.format("%-25s: S/ %8.2f", "TOTAL A PAGAR", total))
 
     println()
     val masCaro = carrito.productoMasCaro()
     if (masCaro != null) {
-        println("Producto mas caro: ${masCaro.nombre} " + String.format("(S/%.2f)", masCaro.precio))
+        println("Producto más caro llevado: ${masCaro.nombre} (S/ ${String.format("%.2f", masCaro.precio)})")
     }
 
     val descuento = carrito.calcularDescuento(total)
@@ -146,7 +182,7 @@ fun main() {
         println("Descuento aplicado: Sin descuento")
     }
 
-    println(String.format("%-22s: S/ %8.2f", "TOTAL CON DESCUENTO", totalConDescuento))
-    println()
-    println("Gracias por su compra, $nombreCliente!")
+    println(String.format("%-25s: S/ %8.2f", "TOTAL CON DESCUENTO", totalConDescuento))
+    println("=============================================")
+    println("¡Gracias por su compra, $nombreCliente!")
 }

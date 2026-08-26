@@ -60,4 +60,6 @@ tasks.register<JavaExec>("ejecutarCarrito") {
     val javacClasses = layout.buildDirectory.dir("intermediates/javac/debug/compileDebugJavaWithJavac/classes")
 
     classpath = files(kotlinClasses, javacClasses) + configurations.getByName("debugRuntimeClasspath")
+    standardInput = System.`in`
 }
+
