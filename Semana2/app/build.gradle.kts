@@ -5,14 +5,12 @@ plugins {
 
 android {
     namespace = "com.Lino.lab02carritokotlin"
-    compileSdk {
-        version = release(37)
-    }
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.Lino.lab02carritokotlin"
         minSdk = 24
-        targetSdk = 37
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -21,9 +19,7 @@ android {
 
     buildTypes {
         release {
-            optimization {
-                enable = false
-            }
+            isMinifyEnabled = false
         }
     }
     compileOptions {
@@ -51,9 +47,17 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
-    tasks.register<JavaExec>("runCarrito") {
-        group = "application"
-        mainClass.set("com.Lino.lab02carritokotlin.CarritoKt")
-        classpath = sourceSets.getByName("main").runtimeClasspath
-    }
+}
+tasks.register<JavaExec>("ejecutarCarrito") {
+    group = "application"
+    description = "Ejecuta el main de Carrito.kt"
+
+    dependsOn("compileDebugKotlin", "compileDebugJavaWithJavac")
+
+    mainClass.set("com.Lino.lab02carritokotlin.CarritoKt")
+
+    val kotlinClasses = tasks.named("compileDebugKotlin").get().outputs.files
+    val javacClasses = layout.buildDirectory.dir("intermediates/javac/debug/compileDebugJavaWithJavac/classes")
+
+    classpath = files(kotlinClasses, javacClasses) + configurations.getByName("debugRuntimeClasspath")
 }
