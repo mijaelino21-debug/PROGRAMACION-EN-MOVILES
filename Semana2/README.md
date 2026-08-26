@@ -28,4 +28,6 @@ Esta rama ("con IA") toma el mismo carrito de compras del laboratorio, pero rees
 <img width="862" height="777" alt="image" src="https://github.com/user-attachments/assets/fd04ff9a-9848-42d0-b7ea-0a1b28bcb677" />
 <img width="837" height="626" alt="image" src="https://github.com/user-attachments/assets/7e3cc521-3211-45ac-b69a-b35c949eb7b9" />
 
+PROMPT USADO :
+Ayudame a Rediseñar este carrito de compras en Kotlin bajo un enfoque orientado a objetos, aplicando los cuatro pilares de POO: una clase abstracta Producto como base (abstracción), subclases especializadas que hereden de ella con comportamiento propio (herencia y polimorfismo), y una clase Carrito que encapsule la lista de productos exponiendo solo una API pública controlada.  Incorpora además las funcionalidades de búsqueda y eliminación de productos dentro del carrito.
 
