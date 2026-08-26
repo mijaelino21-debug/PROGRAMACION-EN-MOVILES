@@ -20,6 +20,9 @@ class ProductoElectronico(
     nombre: String, precio: Double, cantidad: Int, val garantiaMeses: Int
 ) : ProductoPOO(nombre, precio, cantidad) {
     override fun calcularImporte(): Double = precio * cantidad
+    override fun mostrarInfo(): String {
+        return super.mostrarInfo() + "  (Garantia: $garantiaMeses meses)"
+    }
 }
 class ProductoAccesorio(
     nombre: String, precio: Double, cantidad: Int
