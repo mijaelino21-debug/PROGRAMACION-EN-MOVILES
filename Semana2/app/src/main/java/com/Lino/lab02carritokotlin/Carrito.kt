@@ -21,6 +21,11 @@ class ProductoElectronico(
 ) : ProductoPOO(nombre, precio, cantidad) {
     override fun calcularImporte(): Double = precio * cantidad
 }
+class ProductoAccesorio(
+    nombre: String, precio: Double, cantidad: Int
+) : ProductoPOO(nombre, precio, cantidad) {
+    override fun calcularImporte(): Double = precio * cantidad
+}
 
 fun main() {
     println("=========================================")
