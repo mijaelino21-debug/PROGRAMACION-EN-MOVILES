@@ -28,6 +28,14 @@ class ProductoAccesorio(
 }
 class CarritoPOO {
     private val productos = mutableListOf<ProductoPOO>()
+    fun calcularSubtotal(): Double = productos.sumOf { it.calcularImporte() }
+    fun calcularIGV(subtotal: Double): Double = subtotal * 0.18
+    fun calcularTotal(subtotal: Double, igv: Double): Double = subtotal + igv
+    fun calcularDescuento(total: Double): Double = when {
+        total > 5000 -> total * 0.10
+        total > 3000 -> total * 0.05
+        else -> 0.0
+    }
 
     fun agregar(producto: ProductoPOO) {
         productos.add(producto)
