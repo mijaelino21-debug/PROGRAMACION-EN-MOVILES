@@ -57,15 +57,20 @@ class CarritoPOO {
     }
 }
 
+
+
 fun main() {
+    val scanner = java.util.Scanner(System.`in`)
+
     println("=========================================")
     println("   CARRITO DE COMPRAS - TIENDA TECSUP    ")
     println("=========================================")
 
-    val nombreCliente = "Mijael Lino"
+    print("Ingrese el nombre del cliente: ")
+    val nombreCliente = scanner.nextLine()
     val carrito = CarritoPOO()
 
-    println("Cliente: $nombreCliente")
+    println("\nCliente registrado: $nombreCliente")
     println()
 
     carrito.agregar(ProductoElectronico("Laptop HP", 2500.0, 1, garantiaMeses = 12))
