@@ -16,6 +16,11 @@ abstract class ProductoPOO(
         return String.format("%-20s x%d S/ %8.2f", nombre, cantidad, calcularImporte())
     }
 }
+class ProductoElectronico(
+    nombre: String, precio: Double, cantidad: Int, val garantiaMeses: Int
+) : ProductoPOO(nombre, precio, cantidad) {
+    override fun calcularImporte(): Double = precio * cantidad
+}
 
 fun main() {
     println("=========================================")
