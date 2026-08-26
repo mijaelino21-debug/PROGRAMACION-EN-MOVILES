@@ -71,7 +71,7 @@ fun main() {
 
     print("¿Cuántos productos desea ingresar al carrito?: ")
     val totalIngresos = scanner.nextInt()
-    scanner.nextLine() // Limpiar salto de línea del buffer
+    scanner.nextLine()
 
     for (i in 1..totalIngresos) {
         println("\n--- Producto #$i ---")
@@ -102,15 +102,20 @@ fun main() {
     carrito.mostrarDetalle()
 
     println()
-    val encontrado = carrito.buscarProducto("Mouse Logitech")
+    print("Ingrese el nombre del producto que desea buscar: ")
+    val nombreBuscar = scanner.nextLine()
+    val encontrado = carrito.buscarProducto(nombreBuscar)
     if (encontrado != null) {
         println("Producto encontrado: ${encontrado.nombre} - S/ ${String.format("%.2f", encontrado.precio)}")
     } else {
         println("Producto no encontrado")
     }
 
-    carrito.eliminarProducto("USB Kingston 64GB")
-    println("Producto eliminado: USB Kingston 64GB")
+    println()
+    print("Ingrese el nombre del producto que desea eliminar: ")
+    val nombreEliminar = scanner.nextLine()
+    carrito.eliminarProducto(nombreEliminar)
+    println("Producto eliminado: $nombreEliminar")
     println()
     carrito.mostrarDetalle()
 
