@@ -21,3 +21,11 @@ Carrito de compras usando una data class Producto y funciones como calcularSubto
 <img width="881" height="718" alt="image" src="https://github.com/user-attachments/assets/99edd282-63d4-4def-b06f-1bcdb3226e07" />
 
 
+## Rama-con-IA:
+
+Esta rama ("con IA") toma el mismo carrito de compras del laboratorio, pero reescribe su diseño usando Programación Orientada a Objetos con los 4 pilares, en vez de la versión original basada en funciones sueltas y una data class simple. 
+
+<img width="862" height="777" alt="image" src="https://github.com/user-attachments/assets/fd04ff9a-9848-42d0-b7ea-0a1b28bcb677" />
+<img width="837" height="626" alt="image" src="https://github.com/user-attachments/assets/7e3cc521-3211-45ac-b69a-b35c949eb7b9" />
+
+
