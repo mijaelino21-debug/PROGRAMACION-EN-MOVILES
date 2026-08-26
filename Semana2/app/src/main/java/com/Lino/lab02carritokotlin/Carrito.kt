@@ -69,13 +69,34 @@ fun main() {
     val nombreCliente = scanner.nextLine()
     val carrito = CarritoPOO()
 
-    println("\nCliente registrado: $nombreCliente")
-    println()
+    print("¿Cuántos productos desea ingresar al carrito?: ")
+    val totalIngresos = scanner.nextInt()
+    scanner.nextLine() // Limpiar salto de línea del buffer
 
-    carrito.agregar(ProductoElectronico("Laptop HP", 2500.0, 1, garantiaMeses = 12))
-    carrito.agregar(ProductoAccesorio("Mouse Logitech", 45.5, 2))
-    carrito.agregar(ProductoElectronico("Audifonos Sony", 120.0, 1, garantiaMeses = 6))
-    carrito.agregar(ProductoAccesorio("USB Kingston 64GB", 25.0, 3))
+    for (i in 1..totalIngresos) {
+        println("\n--- Producto #$i ---")
+        print("Tipo (1: Electrónico, 2: Accesorio): ")
+        val tipo = scanner.nextInt()
+        scanner.nextLine()
+
+        print("Nombre: ")
+        val nombre = scanner.nextLine()
+
+        print("Precio (S/): ")
+        val precio = scanner.nextDouble()
+
+        print("Cantidad: ")
+        val cantidad = scanner.nextInt()
+
+        if (tipo == 1) {
+            print("Meses de garantía: ")
+            val garantia = scanner.nextInt()
+
+            carrito.agregar(ProductoElectronico(nombre, precio, cantidad, garantia))
+        } else {
+            carrito.agregar(ProductoAccesorio(nombre, precio, cantidad))
+        }
+    }
 
     println()
     carrito.mostrarDetalle()
