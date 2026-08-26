@@ -58,7 +58,6 @@ class CarritoPOO {
 }
 
 
-
 fun main() {
     val scanner = java.util.Scanner(System.`in`)
 
