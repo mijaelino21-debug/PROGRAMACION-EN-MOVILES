@@ -51,4 +51,9 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
+    tasks.register<JavaExec>("runCarrito") {
+        group = "application"
+        mainClass.set("com.Lino.lab02carritokotlin.CarritoKt")
+        classpath = sourceSets.getByName("main").runtimeClasspath
+    }
 }
