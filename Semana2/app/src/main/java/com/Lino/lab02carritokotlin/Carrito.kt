@@ -75,6 +75,20 @@ fun main() {
 
     println()
     carrito.mostrarDetalle()
+
+    println()
+    val encontrado = carrito.buscarProducto("Mouse Logitech")
+    if (encontrado != null) {
+        println("Producto encontrado: ${encontrado.nombre} - S/ ${String.format("%.2f", encontrado.precio)}")
+    } else {
+        println("Producto no encontrado")
+    }
+
+    carrito.eliminarProducto("USB Kingston 64GB")
+    println("Producto eliminado: USB Kingston 64GB")
+    println()
+    carrito.mostrarDetalle()
+
     println("Cantidad de productos : ${carrito.cantidadProductos()}")
 
     val subtotal = carrito.calcularSubtotal()
