@@ -26,6 +26,14 @@ class ProductoAccesorio(
 ) : ProductoPOO(nombre, precio, cantidad) {
     override fun calcularImporte(): Double = precio * cantidad
 }
+class CarritoPOO {
+    private val productos = mutableListOf<ProductoPOO>()
+
+    fun agregar(producto: ProductoPOO) {
+        productos.add(producto)
+        println("Producto agregado: ${producto.nombre}")
+    }
+}
 
 fun main() {
     println("=========================================")
