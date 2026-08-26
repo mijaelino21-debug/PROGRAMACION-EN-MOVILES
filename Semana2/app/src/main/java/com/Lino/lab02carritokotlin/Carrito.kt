@@ -24,15 +24,6 @@ fun main() {
 
     for (producto in carrito) {
         println("Producto agregado: ${producto.nombre}")
-
-        println()
-        val subtotal = calcularSubtotal(carrito)
-        val igv = calcularIGV(subtotal)
-        val total = calcularTotal(subtotal, igv)
-
-        println("Subtotal : S/ $subtotal")
-        println("IGV (18%): S/ $igv")
-        println("TOTAL    : S/ $total")
     }
     println()
     mostrarDetalle(carrito)
