@@ -1,4 +1,5 @@
 package com.Lino.lab02carritokotlin
+
 data class Producto(
     val nombre: String,
     val precio: Double,
@@ -34,13 +35,16 @@ fun main() {
         println("TOTAL    : S/ $total")
     }
     println()
+    mostrarDetalle(carrito)
+    println("Cantidad de productos : ${carrito.size}")
+
     val subtotal = calcularSubtotal(carrito)
     val igv = calcularIGV(subtotal)
     val total = calcularTotal(subtotal, igv)
 
-    println("Subtotal : S/ $subtotal")
-    println("IGV (18%): S/ $igv")
-    println("TOTAL    : S/ $total")
+    println(String.format("%-22s: S/ %8.2f", "Subtotal", subtotal))
+    println(String.format("%-22s: S/ %8.2f", "IGV (18%)", igv))
+    println(String.format("%-22s: S/ %8.2f", "TOTAL A PAGAR", total))
 }
 
     fun calcularSubtotal(productos: List<Producto>): Double {
@@ -58,3 +62,13 @@ fun main() {
     fun calcularTotal(subtotal: Double, igv: Double): Double {
         return subtotal + igv
     }
+fun mostrarDetalle(productos: List<Producto>) {
+    println("---------------- DETALLE DEL CARRITO ----------------")
+    var i = 1
+    for (p in productos) {
+        val importe = p.precio * p.cantidad
+        println(String.format("%d. %-20s x%d S/ %8.2f", i, p.nombre, p.cantidad, importe))
+        i++
+    }
+    println("-----------------------------------------------------")
+}
