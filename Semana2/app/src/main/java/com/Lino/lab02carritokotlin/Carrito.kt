@@ -36,6 +36,13 @@ class CarritoPOO {
         total > 3000 -> total * 0.05
         else -> 0.0
     }
+    fun mostrarDetalle() {
+        println("---------------- DETALLE DEL CARRITO ----------------")
+        productos.forEachIndexed { i, p -> println("${i + 1}. ${p.mostrarInfo()}") }
+        println("-----------------------------------------------------")
+    }
+    fun productoMasCaro(): ProductoPOO? = productos.maxByOrNull { it.precio }
+    fun cantidadProductos(): Int = productos.size
 
     fun agregar(producto: ProductoPOO) {
         productos.add(producto)
