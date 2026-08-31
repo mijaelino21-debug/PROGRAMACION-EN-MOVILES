@@ -1,5 +1,4 @@
 package com.lino.libreria
-
 data class Prestamo(
     val titulo: String,
     val tipoUsuario: String,
@@ -26,9 +25,18 @@ data class Prestamo(
             diasAtraso > 0 -> {
                 println("\nDia\tFecha\tMulta/Dia\tAcumulado")
                 var acumulado = 0.0
+
+                val sdfInput = java.text.SimpleDateFormat("dd/MM/yyyy", java.util.Locale.getDefault())
+                val sdfOutput = java.text.SimpleDateFormat("dd/MM", java.util.Locale.getDefault())
+
+                val calendar = java.util.Calendar.getInstance()
+                val fechaBase = sdfInput.parse(fechaDevolucion)
+                if (fechaBase != null) calendar.time = fechaBase
+
                 for (dia in 1..diasAtraso) {
                     acumulado += tarifa
-                    val fechaDia = "${17 + dia}/10"
+                    calendar.add(java.util.Calendar.DAY_OF_MONTH, 1)
+                    val fechaDia = sdfOutput.format(calendar.time)
                     println("$dia\t$fechaDia\tS/ $tarifa\t\tS/ $acumulado")
                 }
             }
