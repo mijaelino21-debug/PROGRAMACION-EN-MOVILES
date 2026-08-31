@@ -5,9 +5,7 @@ plugins {
 
 android {
     namespace = "com.lino.libreria"
-    compileSdk {
-        version = release(37)
-    }
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.lino.libreria"
@@ -21,9 +19,11 @@ android {
 
     buildTypes {
         release {
-            optimization {
-                enable = false
-            }
+            isMinifyEnabled = false
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
     compileOptions {
@@ -51,4 +51,16 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
+}
+tasks.register<JavaExec>("run") {
+    dependsOn("compileDebugKotlin")
+    mainClass.set("com.lino.libreria.MultasKt")
+
+    val compileKotlinTask = tasks.named("compileDebugKotlin", org.jetbrains.kotlin.gradle.tasks.KotlinCompile::class.java)
+
+    classpath = files(
+        compileKotlinTask.map { it.destinationDirectory },
+        configurations.getByName("debugRuntimeClasspath")
+    )
+    standardInput = System.`in`
 }
