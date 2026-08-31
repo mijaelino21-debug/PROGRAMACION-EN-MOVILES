@@ -13,14 +13,7 @@ data class Prestamo(
         else -> 1.50
     }
 
-    fun calcularMultaTotal(): Double {
-        val tarifa = obtenerMultaPorDia()
-        var acumulado = 0.0
-        for (dia in 1..diasAtraso) {
-            acumulado += tarifa
-        }
-        return acumulado
-    }
+    fun calcularMultaTotal(): Double = diasAtraso * obtenerMultaPorDia()
 
     fun obtenerEstado(): String = when {
         diasAtraso > 0 -> "Devuelto con $diasAtraso dia(s) de atraso"
@@ -30,14 +23,13 @@ data class Prestamo(
     fun mostrarTablaMultas() {
         val tarifa = obtenerMultaPorDia()
         when {
-            diasAtraso == 0 -> println("\n¡No hay multas aplicables! El libro fue entregado a tiempo.")
-            else -> {
-                println("\nDia\tFecha\t\tMulta/Dia\tAcumulado")
+            diasAtraso > 0 -> {
+                println("\nDia\tFecha\tMulta/Dia\tAcumulado")
                 var acumulado = 0.0
                 for (dia in 1..diasAtraso) {
                     acumulado += tarifa
                     val fechaDia = "${17 + dia}/10"
-                    println(String.format("%d\t%s\t\tS/ %.2f\t\tS/ %.2f", dia, fechaDia, tarifa, acumulado))
+                    println("$dia\t$fechaDia\tS/ $tarifa\t\tS/ $acumulado")
                 }
             }
         }
@@ -48,4 +40,36 @@ fun main() {
     println("=========================================")
     println(" SISTEMA DE MULTAS - POO")
     println("=========================================")
+    print("Titulo Libro: ")
+    val titulo = readLine() ?: ""
+
+    print("Tipo de Usuario (Docente/Alumno): ")
+    val tipoUsuario = readLine() ?: ""
+
+    print("Fecha Prestamo: ")
+    val fechaPrestamo = readLine() ?: ""
+
+    print("Fecha Devolucion: ")
+    val fechaDevolucion = readLine() ?: ""
+
+    print("Fecha Entrega: ")
+    val fechaEntrega = readLine() ?: ""
+
+    print("Dias de Atraso: ")
+    val diasAtraso = readLine()?.toIntOrNull() ?: 0
+    val prestamo = Prestamo(titulo, tipoUsuario, fechaPrestamo, fechaDevolucion, fechaEntrega, diasAtraso)
+
+    println()
+    println("TITULO LIBRO     : ${prestamo.titulo}")
+    println("TIPO DE USUARIO  : ${prestamo.tipoUsuario}")
+    println("FECHA PRESTAMO   : ${prestamo.fechaPrestamo}")
+    println("FECHA DEVOLUCION : ${prestamo.fechaDevolucion}")
+    println("FECHA ENTREGA    : ${prestamo.fechaEntrega}")
+    println("ESTADO           : ${prestamo.obtenerEstado()}")
+
+    prestamo.mostrarTablaMultas()
+
+    println()
+    println("MULTA TOTAL S/ ${prestamo.calcularMultaTotal()}")
+
 }
