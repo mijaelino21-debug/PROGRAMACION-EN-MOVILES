@@ -1,5 +1,6 @@
 package com.lastname.lab03registroproducto
 
+import androidx.compose.ui.graphics.Color
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -136,5 +137,11 @@ fun PantallaRegistro(modifier: Modifier = Modifier) {
                 }
             }
         }
+        Spacer(modifier= Modifier.height(16.dp))
+        Text(
+            text = "producto registrado correctamente",
+            color = Color(0xFF2E7D32),
+            style = MaterialTheme.typography.bodyMedium
+        )
     }
 }
