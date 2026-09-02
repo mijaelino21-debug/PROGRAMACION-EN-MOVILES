@@ -48,6 +48,7 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
 }
+
 tasks.register<JavaExec>("ejecutarCarrito") {
     group = "application"
     description = "Ejecuta el main de Carrito.kt"
