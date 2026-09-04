@@ -102,5 +102,29 @@ fun RegistroNotasApp() {
             CursoItem("Desarrollo de Apps Móviles", "(30%)", nota3) { nota3 = it }
             CursoItem("Base de Datos", "(25%)", nota4) { nota4 = it }
         }
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text("redondear promedio final", fontSize = 14.sp)
+            Switch(
+                checked = redondear,
+                onCheckedChange = { redondear = it }
+            )
+        }
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(vertical = 4.dp)
+        ) {
+            Checkbox(
+                checked = confirmado,
+                onCheckedChange = { confirmado = it }
+            )
+            Text("confirmar que las notas seam correctas", fontSize = 13.sp)
+        }
     }
 }
