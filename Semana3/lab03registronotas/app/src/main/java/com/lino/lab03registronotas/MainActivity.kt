@@ -1,5 +1,12 @@
 package com.lino.lab03registronotas
 
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -19,7 +26,47 @@ class MainActivity : ComponentActivity() {
             Lab03registronotasTheme {
                 RegistroNotasApp()
             }
+
         }
+    }
+}
+@Composable
+fun CursoItem(
+    nombre: String,
+    peso: String,
+    valor: Float,
+    onValueChange: (Float) -> Unit
+) {
+    Column(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row {
+                Text(nombre, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(peso, color = Color(0xFF6750A4), fontSize = 12.sp)
+            }
+            Surface(
+                color = Color(0xFFE8DEF8),
+                shape = RoundedCornerShape(4.dp)
+            ) {
+                Text(
+                    text = "${valor.toInt()}",
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF21005D),
+                    fontSize = 12.sp
+                )
+            }
+        }
+        Slider(
+            value = valor,
+            onValueChange = onValueChange,
+            valueRange = 0f..20f,
+            steps = 19
+        )
     }
 }
 
