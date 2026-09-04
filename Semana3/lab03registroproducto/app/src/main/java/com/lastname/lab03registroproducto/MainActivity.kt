@@ -53,12 +53,14 @@ fun PantallaRegistro(modifier: Modifier = Modifier) {
     var cantidad by remember { mutableStateOf("") }
     var mostrarResumen by remember { mutableStateOf(false) }
 
+    // Estado para gestionar el mensaje de error
+    var mensajeError by remember { mutableStateOf("") }
+
     Column(
         modifier = modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
-
         Text(
             text = "Nuevo producto",
             style = MaterialTheme.typography.headlineSmall
@@ -66,11 +68,10 @@ fun PantallaRegistro(modifier: Modifier = Modifier) {
         Text(
             text = "Completa los datos y presiona Agregar",
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.outline
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
 
-        Spacer(modifier = Modifier.height(24.dp))
-
+        Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedTextField(
             value = nombre,
@@ -79,7 +80,7 @@ fun PantallaRegistro(modifier: Modifier = Modifier) {
             modifier = Modifier.fillMaxWidth()
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
         Row(modifier = Modifier.fillMaxWidth()) {
             OutlinedTextField(
@@ -88,9 +89,7 @@ fun PantallaRegistro(modifier: Modifier = Modifier) {
                 label = { Text("Precio (S/)") },
                 modifier = Modifier.weight(1f)
             )
-
-            Spacer(modifier = Modifier.width(16.dp))
-
+            Spacer(modifier = Modifier.width(8.dp))
             OutlinedTextField(
                 value = cantidad,
                 onValueChange = { cantidad = it },
@@ -99,18 +98,53 @@ fun PantallaRegistro(modifier: Modifier = Modifier) {
             )
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
-        Button(
-            onClick = { mostrarResumen = true },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("AGREGAR PRODUCTO")
+        // Fila de botones: AGREGAR PRODUCTO y LIMPIAR
+        Row(modifier = Modifier.fillMaxWidth()) {
+            Button(
+                onClick = {
+                    if (nombre.isBlank() || precio.isBlank() || cantidad.isBlank()) {
+                        mensajeError = "Error: Faltan campos obligatorios por llenar."
+                        mostrarResumen = false
+                    } else {
+                        mensajeError = ""
+                        mostrarResumen = true
+                    }
+                },
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("AGREGAR PRODUCTO")
+            }
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            Button(
+                onClick = {
+                    nombre = ""
+                    precio = ""
+                    cantidad = ""
+                    mostrarResumen = false
+                    mensajeError = ""
+                },
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("Limpiar")
+            }
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
+        // Mensaje de error en texto rojo cuando falta un campo
+        if (mensajeError.isNotEmpty()) {
+            Text(
+                text = mensajeError,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodyMedium
+            )
+        }
 
+        // Card de resumen intacta
         if (mostrarResumen) {
             val precioNum = precio.toDoubleOrNull() ?: 0.0
             val cantidadNum = cantidad.toIntOrNull() ?: 0
@@ -136,12 +170,14 @@ fun PantallaRegistro(modifier: Modifier = Modifier) {
                     )
                 }
             }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                text = "✓ Producto registrado correctamente",
+                color = Color(0xFF2E7D32),
+                style = MaterialTheme.typography.bodyMedium
+            )
         }
-        Spacer(modifier= Modifier.height(16.dp))
-        Text(
-            text = "producto registrado correctamente",
-            color = Color(0xFF2E7D32),
-            style = MaterialTheme.typography.bodyMedium
-        )
     }
 }
