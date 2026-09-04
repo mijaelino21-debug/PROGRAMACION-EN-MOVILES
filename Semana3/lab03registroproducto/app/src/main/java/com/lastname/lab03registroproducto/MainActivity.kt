@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -100,26 +101,32 @@ fun PantallaRegistro(modifier: Modifier = Modifier) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Fila de botones: AGREGAR PRODUCTO y LIMPIAR
+        // Correcciones manuales B2: OutlinedButton y validación de texto
         Row(modifier = Modifier.fillMaxWidth()) {
             Button(
                 onClick = {
+                    val precioNum = precio.toDoubleOrNull()
+                    val cantidadNum = cantidad.toIntOrNull()
+
                     if (nombre.isBlank() || precio.isBlank() || cantidad.isBlank()) {
-                        mensajeError = "Error: Faltan campos obligatorios por llenar."
+                        mensajeError = "⚠️ Por favor, complete todos los campos obligatorios."
+                        mostrarResumen = false
+                    } else if (precioNum == null || cantidadNum == null) {
+                        mensajeError = "⚠️ Ingrese valores numéricos válidos en Precio y Cantidad."
                         mostrarResumen = false
                     } else {
                         mensajeError = ""
                         mostrarResumen = true
                     }
                 },
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1.5f)
             ) {
                 Text("AGREGAR PRODUCTO")
             }
 
             Spacer(modifier = Modifier.width(8.dp))
 
-            Button(
+            OutlinedButton(
                 onClick = {
                     nombre = ""
                     precio = ""
@@ -129,7 +136,7 @@ fun PantallaRegistro(modifier: Modifier = Modifier) {
                 },
                 modifier = Modifier.weight(1f)
             ) {
-                Text("Limpiar")
+                Text("LIMPIAR")
             }
         }
 
