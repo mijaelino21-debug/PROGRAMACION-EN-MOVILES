@@ -126,5 +126,40 @@ fun RegistroNotasApp() {
             )
             Text("confirmar que las notas seam correctas", fontSize = 13.sp)
         }
+        Button(
+            onClick = {
+                val p = (nota1 * 0.20f) + (nota2 * 0.25f) + (nota3 * 0.30f) + (nota4 * 0.25f)
+                promPonderado = p.toDouble()
+
+                val pFinal = if (redondear) kotlin.math.round(p) else p
+                promFinalStr = if (redondear) "${pFinal.toInt()}" else String.format("%.2f", pFinal)
+
+                when {
+                    pFinal >= 17.5f -> {
+                        observacion = "excelente"
+                        colorChip = Color(0xFF2E7D32)
+                    }
+                    pFinal >= 13.0f -> {
+                        observacion = "aprobadoo"
+                        colorChip = Color(0xFF1565C0)
+                    }
+                    pFinal >= 10.5f -> {
+                        observacion = "en recuperacion"
+                        colorChip = Color(0xFFEF6C00)
+                    }
+                    else -> {
+                        observacion = "desaprobado"
+                        colorChip = Color(0xFFC62828)
+                    }
+                }
+                calculado = true
+            },
+            enabled = confirmado,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp)
+        ) {
+            Text("CALCULAR PROMEDIO")
+        }
     }
 }
