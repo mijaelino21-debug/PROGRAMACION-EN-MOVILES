@@ -5,12 +5,10 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.graphics.Color
 import com.lino.lab03registronotas.ui.theme.Lab03registronotasTheme
 
 class MainActivity : ComponentActivity() {
@@ -19,29 +17,29 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             Lab03registronotasTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+                RegistroNotasApp()
             }
         }
     }
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
+fun RegistroNotasApp() {
+    var nota1 by remember { mutableStateOf(0f) }
+    var nota2 by remember { mutableStateOf(0f) }
+    var nota3 by remember { mutableStateOf(0f) }
+    var nota4 by remember { mutableStateOf(0f) }
 
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    Lab03registronotasTheme {
-        Greeting("Android")
+    var redondear by remember { mutableStateOf(false) }
+    var confirmado by remember { mutableStateOf(false) }
+
+    var calculado by remember { mutableStateOf(false) }
+    var promPonderado by remember { mutableStateOf(0.0) }
+    var promFinalStr by remember { mutableStateOf("") }
+    var observacion by remember { mutableStateOf("") }
+    var colorChip by remember { mutableStateOf(Color.Gray) }
+
+    Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+
     }
 }
