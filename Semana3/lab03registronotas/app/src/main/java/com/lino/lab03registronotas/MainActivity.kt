@@ -101,65 +101,113 @@ fun RegistroNotasApp() {
             CursoItem("Programación Orientada a Objetos", "(25%)", nota2) { nota2 = it }
             CursoItem("Desarrollo de Apps Móviles", "(30%)", nota3) { nota3 = it }
             CursoItem("Base de Datos", "(25%)", nota4) { nota4 = it }
-        }
-        Spacer(modifier = Modifier.height(8.dp))
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text("redondear promedio final", fontSize = 14.sp)
-            Switch(
-                checked = redondear,
-                onCheckedChange = { redondear = it }
-            )
-        }
 
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(vertical = 4.dp)
-        ) {
-            Checkbox(
-                checked = confirmado,
-                onCheckedChange = { confirmado = it }
-            )
-            Text("confirmar que las notas seam correctas", fontSize = 13.sp)
-        }
-        Button(
-            onClick = {
-                val p = (nota1 * 0.20f) + (nota2 * 0.25f) + (nota3 * 0.30f) + (nota4 * 0.25f)
-                promPonderado = p.toDouble()
+            Spacer(modifier = Modifier.height(8.dp))
 
-                val pFinal = if (redondear) kotlin.math.round(p) else p
-                promFinalStr = if (redondear) "${pFinal.toInt()}" else String.format("%.2f", pFinal)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("redondear promedio final", fontSize = 14.sp)
+                Switch(
+                    checked = redondear,
+                    onCheckedChange = { redondear = it }
+                )
+            }
 
-                when {
-                    pFinal >= 17.5f -> {
-                        observacion = "excelente"
-                        colorChip = Color(0xFF2E7D32)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(vertical = 4.dp)
+            ) {
+                Checkbox(
+                    checked = confirmado,
+                    onCheckedChange = { confirmado = it }
+                )
+                Text("confirmar que las notas seam correctas", fontSize = 13.sp)
+            }
+
+            Button(
+                onClick = {
+                    val p = (nota1 * 0.20f) + (nota2 * 0.25f) + (nota3 * 0.30f) + (nota4 * 0.25f)
+                    promPonderado = p.toDouble()
+
+                    val pFinal = if (redondear) kotlin.math.round(p) else p
+                    promFinalStr =
+                        if (redondear) "${pFinal.toInt()}" else String.format("%.2f", pFinal)
+
+                    when {
+                        pFinal >= 17.5f -> {
+                            observacion = "excelente"
+                            colorChip = Color(0xFF2E7D32)
+                        }
+
+                        pFinal >= 13.0f -> {
+                            observacion = "aprobadoo"
+                            colorChip = Color(0xFF1565C0)
+                        }
+
+                        pFinal >= 10.5f -> {
+                            observacion = "en recuperacion"
+                            colorChip = Color(0xFFEF6C00)
+                        }
+
+                        else -> {
+                            observacion = "desaprobado"
+                            colorChip = Color(0xFFC62828)
+                        }
                     }
-                    pFinal >= 13.0f -> {
-                        observacion = "aprobadoo"
-                        colorChip = Color(0xFF1565C0)
-                    }
-                    pFinal >= 10.5f -> {
-                        observacion = "en recuperacion"
-                        colorChip = Color(0xFFEF6C00)
-                    }
-                    else -> {
-                        observacion = "desaprobado"
-                        colorChip = Color(0xFFC62828)
+                    calculado = true
+                },
+                enabled = confirmado,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+            ) {
+                Text("CALCULAR PROMEDIO")
+            }
+            if (calculado) {
+
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFF3EDF7))
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            text = "Resultado del Semestre",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 15.sp,
+                            color = Color(0xFF1D1B20)
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "Promedio ponderado: ${String.format("%.2f", promPonderado)}",
+                            fontSize = 13.sp
+                        )
+                        Text(
+                            text = "Promedio final: $promFinalStr",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 14.sp
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Surface(
+                            color = colorChip,
+                            shape = RoundedCornerShape(16.dp)
+                        ) {
+                            Text(
+                                text = observacion,
+                                color = Color.White,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 12.sp,
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                            )
+                        }
                     }
                 }
-                calculado = true
-            },
-            enabled = confirmado,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp)
-        ) {
-            Text("CALCULAR PROMEDIO")
+            }
         }
     }
 }
