@@ -22,6 +22,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Lino"
+rootProject.name = "lab04-carrito-lino"
 include(":app")
  
