@@ -1,4 +1,3 @@
-package com.lino.navlab.navigation
 
 package com.lino.navlab.navigation
 
