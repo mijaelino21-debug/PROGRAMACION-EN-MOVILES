@@ -5,6 +5,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.*
 import androidx.navigation.compose.rememberNavController
@@ -21,10 +22,13 @@ fun AppNavigation() {
     Scaffold(
         bottomBar = {
             if (showBottomBar) {
-                NavigationBar {
+                NavigationBar(
+                    containerColor = Color.White
+                ) {
                     bottomNavItems.forEach { item ->
+                        val isSelected = currentRoute == item.route
                         NavigationBarItem(
-                            selected = currentRoute == item.route,
+                            selected = isSelected,
                             onClick = {
                                 navController.navigate(item.route) {
                                     popUpTo(navController.graph.findStartDestination().id) {
@@ -35,7 +39,14 @@ fun AppNavigation() {
                                 }
                             },
                             icon = { Icon(item.icon!!, contentDescription = item.title) },
-                            label = { Text(item.title) }
+                            label = { Text(item.title) },
+                            colors = NavigationBarItemDefaults.colors(
+                                selectedIconColor = Color(0xFF00695C),
+                                selectedTextColor = Color(0xFF00695C),
+                                indicatorColor = Color(0xFFE0F2F1),
+                                unselectedIconColor = Color.Gray,
+                                unselectedTextColor = Color.Gray
+                            )
                         )
                     }
                 }
@@ -48,7 +59,7 @@ fun AppNavigation() {
             modifier = Modifier.padding(innerPadding)
         ) {
             composable(Screen.Inicio.route) { HomeScreen(navController) }
-            composable(Screen.Reservas.route) { ReservasScreen(navController) }
+            composable(Screen.Reservas.route) { ReservasScreen() }
             composable(Screen.Rutinas.route) { RutinasScreen() }
             composable(Screen.Perfil.route) { PerfilScreen() }
 
@@ -59,8 +70,7 @@ fun AppNavigation() {
 
             composable(Screen.Confirmacion.route) { backStackEntry ->
                 val claseId = backStackEntry.arguments?.getString("claseId") ?: ""
-                val horario = backStackEntry.arguments?.getString("horario") ?: ""
-                ConfirmacionScreen(navController, claseId, horario)
+                ConfirmacionScreen(navController, claseId)
             }
         }
     }
