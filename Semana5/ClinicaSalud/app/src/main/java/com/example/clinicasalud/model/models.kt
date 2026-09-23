@@ -22,5 +22,3 @@ val listaMedicos = listOf(
 )
 
 val especialidades = listOf("Todas", "Cardiología", "Pediatría", "Dermatología", "Traumatología")
-val fechasDisponibles = listOf("Jue 26", "Vie 27", "Sáb 28")
-val horasDisponibles = listOf("9:00 am", "10:30 am", "3:00 pm")
