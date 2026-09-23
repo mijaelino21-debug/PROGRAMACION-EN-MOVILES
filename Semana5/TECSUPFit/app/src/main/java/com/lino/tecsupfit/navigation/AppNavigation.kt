@@ -60,7 +60,10 @@ fun AppNavigation() {
         ) {
             composable(Screen.Inicio.route) { HomeScreen(navController) }
             composable(Screen.Reservas.route) { ReservasScreen() }
-            composable(Screen.Rutinas.route) { RutinasScreen() }
+
+            // AQUÍ: La pestaña Rutinas ahora carga la pantalla de IA
+            composable(Screen.Rutinas.route) { IAScreen() }
+
             composable(Screen.Perfil.route) { PerfilScreen() }
 
             composable(Screen.DetalleClase.route) { backStackEntry ->
