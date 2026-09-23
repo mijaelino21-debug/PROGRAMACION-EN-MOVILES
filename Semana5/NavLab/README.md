@@ -5,15 +5,23 @@ Autor: Mijael Lino Barja
 Carrera: Diseño y Desarrollo de Software
 
 Capturas de los resultados sin el rediseño con IA de Android Studio
+
 <img width="384" height="722" alt="image" src="https://github.com/user-attachments/assets/cd9d5f39-1d34-4656-a3b6-9350f6711358" />
+
 <img width="420" height="720" alt="image" src="https://github.com/user-attachments/assets/2556eda0-1bd3-47e5-b5db-a388697d3ea8" />
+
 <img width="648" height="1152" alt="image" src="https://github.com/user-attachments/assets/fb1dea34-c954-418c-a2a2-6c92ea65b6bd" />
 
 Capturas de los resultados  con la mejora de diseño con IA de Android Studio
+
 <img width="310" height="632" alt="image" src="https://github.com/user-attachments/assets/bf34d8d7-1f31-47a5-932c-65f6cedd3df8" />
+
 <img width="306" height="651" alt="image" src="https://github.com/user-attachments/assets/b1c67048-4786-4f3c-96bf-4e0101303aa7" />
+
 <img width="314" height="553" alt="image" src="https://github.com/user-attachments/assets/fd2d4bb3-e99b-4cff-a7b1-f99f747f1ba9" />
+
 <img width="300" height="561" alt="image" src="https://github.com/user-attachments/assets/85de308c-3c08-47e6-aaeb-a462ae63cea2" />
+
 <img width="303" height="626" alt="image" src="https://github.com/user-attachments/assets/8894c338-0b6b-4f4d-991c-572c953cf2d9" />
 
 Prompt usado 
