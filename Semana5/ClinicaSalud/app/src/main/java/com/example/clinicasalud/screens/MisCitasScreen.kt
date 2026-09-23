@@ -93,6 +93,7 @@ fun MisCitasScreen(navController: NavController, onMenuClick: () -> Unit, citas:
                                     // Se muestra únicamente si la cita sigue en estado "Confirmada"
                                     if (estadoActual.value == "Confirmada") {
                                         TextButton(onClick = {
+                                            cita.estado = "Completada"
                                             estadoActual.value = "Completada"
                                         }) {
                                             Text("Marcar completada")
