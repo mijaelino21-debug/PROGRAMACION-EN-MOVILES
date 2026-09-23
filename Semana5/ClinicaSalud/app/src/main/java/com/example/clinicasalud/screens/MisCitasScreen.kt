@@ -113,6 +113,7 @@ fun MisCitasScreen(navController: NavController, onMenuClick: () -> Unit, citas:
                                         Row {
                                             // Primer Botón: Marcar completada
                                         TextButton(onClick = {
+                                            cita.estado = "Completada"
                                             estadoActual.value = "Completada"
                                             cita.estado = "Completada"
                                         }) {
