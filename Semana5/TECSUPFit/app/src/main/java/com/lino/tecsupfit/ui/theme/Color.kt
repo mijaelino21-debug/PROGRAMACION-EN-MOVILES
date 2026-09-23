@@ -10,6 +10,7 @@ val Purple40 = Color(0xFF6650a4)
 val PurpleGrey40 = Color(0xFF625b71)
 val Pink40 = Color(0xFF7D5260)
 
-val TecsupOrange = Color(0xFFFF6B00)
-val TecsupDark = Color(0xFF1E1E1E)
-val TecsupGray = Color(0xFFF5F5F5)
+val PrimaryGreen = Color(0xFF00695C)       // Verde oscuro (Header y Botón principal)
+val SecondaryGreen = Color(0xFFE0F2F1)     // Verde menta suave (Fondo de íconos/cards)
+val DarkGreenIcon = Color(0xFF004D40)      // Verde oscuro para íconos
+val BackgroundLight = Color(0xFFFAFAFA)

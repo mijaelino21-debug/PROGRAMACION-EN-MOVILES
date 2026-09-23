@@ -15,7 +15,7 @@ fun PerfilScreen() {
     ) {
         Text("Mi perfil", style = MaterialTheme.typography.headlineMedium)
         Spacer(modifier = Modifier.height(24.dp))
-        Text("DR", style = MaterialTheme.typography.displayMedium)
+        Text("Ml", style = MaterialTheme.typography.displayMedium)
         Text("Mijael Lino", style = MaterialTheme.typography.titleLarge)
         Text("Plan Premium", style = MaterialTheme.typography.bodyMedium)
 
