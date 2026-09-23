@@ -58,7 +58,7 @@ fun AppNavigation() {
                 MisCitasScreen(navController, { scope.launch { drawerState.open() } }, misCitas)
             }
             composable(Screen.Historial.route) {
-                HistorialScreen(navController) { scope.launch { drawerState.open() } }
+                HistorialScreen(onMenuClick = { scope.launch { drawerState.open() } })
             }
             composable(
                 Screen.PerfilMedico.route,
