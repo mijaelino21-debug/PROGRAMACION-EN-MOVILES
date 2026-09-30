@@ -2,33 +2,41 @@ package com.tecsup.lino
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun TarjetaProducto(producto: Producto, onEliminar: () -> Unit) {
-    Card(modifier = Modifier.fillMaxWidth()) {
+fun TarjetaProducto(producto: Producto) {
+    var expanded by remember { mutableStateOf(false) }
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
         Row(
-            modifier = Modifier.padding(16.dp).fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column(modifier = Modifier.weight(1f)) {
+            Column {
                 Text(text = producto.nombre, style = MaterialTheme.typography.titleMedium)
                 Text(
                     text = "S/ ${producto.precio} x ${producto.cantidad}",
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    style = MaterialTheme.typography.bodyMedium
                 )
             }
-            Text(text = "S/ %.2f".format(producto.precio * producto.cantidad))
-            IconButton(onClick = onEliminar) {
+            IconButton(onClick = { expanded = true }) {
                 Icon(
-                    imageVector = Icons.Default.Delete,
-                    contentDescription = "Eliminar",
-                    tint = MaterialTheme.colorScheme.error
+                    imageVector = Icons.Default.MoreVert,
+                    contentDescription = "Opciones"
                 )
             }
         }
