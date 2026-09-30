@@ -13,10 +13,15 @@ fun AppNavegacion() {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
+    // Se obtiene la ruta actual para resaltar el ítem activo en el drawer
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
             AppDrawer(
+                currentRoute = currentRoute,
                 onNavigate = { screen ->
                     navController.navigate(screen.route) {
                         popUpTo(Screen.Inicio.route)
