@@ -3,7 +3,9 @@ package com.tecsup.lino.navigation
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.navigation.compose.*
-import com.tecsup.lino.PantallaCarrito
+import com.tecsup.lino.Producto
+import com.tecsup.lino.screens.PantallaCarrito
+import com.tecsup.lino.screens.PantallaFavoritos
 import com.tecsup.lino.screens.PantallaSimple
 import kotlinx.coroutines.launch
 
@@ -13,9 +15,17 @@ fun AppNavegacion() {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
-    // Se obtiene la ruta actual para resaltar el ítem activo en el drawer
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
+
+    // Listas compartidas globales
+    val listaProductos = remember {
+        mutableStateListOf(
+            Producto("Laptop Gaming", 3500.0, 1),
+            Producto("Mouse Inalámbrico", 80.0, 2)
+        )
+    }
+    val listaFavoritos = remember { mutableStateListOf<Producto>() }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -34,13 +44,20 @@ fun AppNavegacion() {
     ) {
         NavHost(navController = navController, startDestination = Screen.Inicio.route) {
             composable(Screen.Inicio.route) {
-                PantallaCarrito(onMenuClick = { scope.launch { drawerState.open() } })
+                PantallaCarrito(
+                    listaProductos = listaProductos,
+                    listaFavoritos = listaFavoritos,
+                    onMenuClick = { scope.launch { drawerState.open() } }
+                )
             }
             composable(Screen.Pedidos.route) {
                 PantallaSimple(titulo = Screen.Pedidos.title, onMenuClick = { scope.launch { drawerState.open() } })
             }
             composable(Screen.Favoritos.route) {
-                PantallaSimple(titulo = Screen.Favoritos.title, onMenuClick = { scope.launch { drawerState.open() } })
+                PantallaFavoritos(
+                    listaFavoritos = listaFavoritos,
+                    onMenuClick = { scope.launch { drawerState.open() } }
+                )
             }
             composable(Screen.Perfil.route) {
                 PantallaSimple(titulo = Screen.Perfil.title, onMenuClick = { scope.launch { drawerState.open() } })
