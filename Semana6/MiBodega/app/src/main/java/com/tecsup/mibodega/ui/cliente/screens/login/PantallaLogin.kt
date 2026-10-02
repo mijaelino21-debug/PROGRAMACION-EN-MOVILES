@@ -1,4 +1,4 @@
-package com.tecsup.mibodega.ui.cliente.screens
+package com.tecsup.mibodega.ui.cliente.screens.login
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
