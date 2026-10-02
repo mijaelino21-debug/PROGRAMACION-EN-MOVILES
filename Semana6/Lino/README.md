@@ -63,11 +63,16 @@ tuve que aplicar State Hoisting definiendo listaFavoritos en la composable de ni
 Se corrigieron descalces en la firma del callback de TarjetaProducto (onAgregarFavorito), se estandarizaron las rutas de los paquetes (com.tecsup.lino y com.tecsup.lino.Screens) y se pasó obligatoriamente la función onMenuClick a todas las pantallas para evitar errores de compilación.
 
 ## Observaciones y conclusiones
+
 Observaciones
+
 Las inconsistencias de capitalización en el nombre de los paquetes (screens vs Screens) generaron errores de referencia no resuelta  en las importaciones.
+
 Al modificar los parámetros del componente TarjetaProducto, fue necesario actualizar en cascada sus invocaciones en PantallaCarrito y PantallaFavoritos.
 
 Conclusiones
+
 La Fase 1 permitió asimilar la sintaxis y maquetación de Compose, mientras que la Fase 2 aceleró la implementación de lógica reactiva como State Hoisting mediante el soporte de la IA.
+
 La asistencia con IA no sustituye el criterio técnico; fue indispensable comprender la arquitectura para resolver los fallos de firmas de parámetros e importaciones entre archivos.
 
