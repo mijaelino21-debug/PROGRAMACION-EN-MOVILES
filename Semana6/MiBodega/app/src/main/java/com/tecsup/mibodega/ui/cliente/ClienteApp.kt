@@ -1,4 +1,4 @@
-package com.tecsup.mibodega.ui.cliente
+    package com.tecsup.mibodega.ui.cliente
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
