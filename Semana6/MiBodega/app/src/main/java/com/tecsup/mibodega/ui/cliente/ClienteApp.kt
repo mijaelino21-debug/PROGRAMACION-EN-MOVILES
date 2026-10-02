@@ -15,7 +15,9 @@ import com.tecsup.mibodega.ui.cliente.modelo.Producto
 import com.tecsup.mibodega.ui.cliente.modelo.listaProductosFake
 import com.tecsup.mibodega.ui.cliente.screens.bienvenida.BienvenidaScreen
 import com.tecsup.mibodega.ui.cliente.screens.carrito.CarritoScreen
+import com.tecsup.mibodega.ui.cliente.screens.confirmacion.ConfirmacionScreen
 import com.tecsup.mibodega.ui.cliente.screens.detalle.DetalleProductoScreen
+import com.tecsup.mibodega.ui.cliente.screens.entrega.DatosEntregaScreen
 import com.tecsup.mibodega.ui.cliente.screens.inicio.InicioScreen
 import com.tecsup.mibodega.ui.cliente.screens.login.PantallaLogin
 import com.tecsup.mibodega.ui.cliente.screens.registro.RegistroScreen
@@ -35,6 +37,8 @@ private object Rutas {
     const val INICIO = "inicio"
     const val DETALLE = "detalle/{productoId}"
     const val CARRITO = "carrito"
+    const val ENTREGA = "entrega"
+    const val CONFIRMACION = "confirmacion"
 
     fun detalle(productoId: Int) = "detalle/$productoId"
 }
@@ -131,7 +135,31 @@ fun ClienteApp() {
                 onEliminar = { producto ->
                     carrito = carrito.filterNot { it.producto.id == producto.id }
                 },
-                onContinuarPedido = { /* TODO: navegar a DatosEntregaScreen */ }
+                onContinuarPedido = {
+                    navController.navigate(Rutas.ENTREGA)
+                }
+            )
+        }
+
+        composable(Rutas.ENTREGA) {
+            DatosEntregaScreen(
+                onVolver = { navController.popBackStack() },
+                onConfirmarPedido = {
+                    navController.navigate(Rutas.CONFIRMACION)
+                }
+            )
+        }
+
+        composable(Rutas.CONFIRMACION) {
+            ConfirmacionScreen(
+                onVolverInicio = {
+                    // Vaciamos el carrito tras confirmar la compra
+                    carrito = emptyList()
+                    // Regresamos a la pantalla de Inicio limpiando la pila hasta INICIO
+                    navController.navigate(Rutas.INICIO) {
+                        popUpTo(Rutas.INICIO) { inclusive = true }
+                    }
+                }
             )
         }
     }
