@@ -23,8 +23,7 @@ fun DatosEntregaScreen(
     var telefono by remember { mutableStateOf("997 281 487") }
     var direccion by remember { mutableStateOf("Av. La Molina 123") }
     var referencia by remember { mutableStateOf("Frente al parque") }
-    var metodoPago by remember { mutableStateOf("Efectivo") }
-
+    var metodoPago by remember { mutableStateOf("Efectivo al entregar") }
     Scaffold(
         topBar = {
             TopAppBar(
