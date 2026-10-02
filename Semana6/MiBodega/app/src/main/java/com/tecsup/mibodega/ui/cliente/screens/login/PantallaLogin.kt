@@ -1,12 +1,17 @@
 package com.tecsup.mibodega.ui.cliente.screens.login
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.tecsup.mibodega.R
 
 @Composable
 fun PantallaLogin(
@@ -23,6 +28,15 @@ fun PantallaLogin(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+        // Imagen de la bodega agregada desde res/drawable
+        Image(
+            painter = painterResource(id = R.drawable.ilustracion_bodega),
+            contentDescription = "Ilustración Bodega",
+            modifier = Modifier
+                .size(180.dp)
+                .padding(bottom = 16.dp)
+        )
+
         Text(
             text = "Mi Bodega",
             style = MaterialTheme.typography.headlineLarge,

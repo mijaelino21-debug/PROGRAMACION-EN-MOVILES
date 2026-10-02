@@ -1,7 +1,10 @@
 package com.tecsup.mibodega.ui.cliente.screens.entrega
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -9,9 +12,17 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.tecsup.mibodega.R
 import com.tecsup.mibodega.ui.componentes.BotonPrimario
+
+data class OpcionPago(
+    val nombre: String,
+    val resIdIcono: Int
+)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -23,7 +34,17 @@ fun DatosEntregaScreen(
     var telefono by remember { mutableStateOf("997 281 487") }
     var direccion by remember { mutableStateOf("Av. La Molina 123") }
     var referencia by remember { mutableStateOf("Frente al parque") }
+
+    // Estado inicial que coincide exacto con la primera opción
     var metodoPago by remember { mutableStateOf("Efectivo al entregar") }
+
+    // Lista de opciones vinculadas a los archivos en drawable
+    val opcionesPago = listOf(
+        OpcionPago("Efectivo al entregar", R.drawable.efectivo),
+        OpcionPago("Yape", R.drawable.yape),
+        OpcionPago("Plin", R.drawable.plin)
+    )
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -75,19 +96,44 @@ fun DatosEntregaScreen(
             )
             Spacer(modifier = Modifier.height(20.dp))
 
-            Text("Método de pago", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "Método de pago",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.height(12.dp))
 
-            listOf("Efectivo al entregar", "Yape", "Plin").forEach { opcion ->
+            opcionesPago.forEach { opcion ->
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { metodoPago = opcion.nombre }
+                        .padding(vertical = 8.dp)
                 ) {
                     RadioButton(
-                        selected = (metodoPago == opcion),
-                        onClick = { metodoPago = opcion }
+                        selected = (metodoPago == opcion.nombre),
+                        onClick = { metodoPago = opcion.nombre }
                     )
-                    Text(text = opcion, modifier = Modifier.padding(start = 8.dp))
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    // Imagen del método de pago renderizada
+                    Image(
+                        painter = painterResource(id = opcion.resIdIcono),
+                        contentDescription = opcion.nombre,
+                        modifier = Modifier
+                            .size(32.dp)
+                            .clip(RoundedCornerShape(6.dp))
+                    )
+
+                    Spacer(modifier = Modifier.width(12.dp))
+
+                    Text(
+                        text = opcion.nombre,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Medium
+                    )
                 }
             }
 
