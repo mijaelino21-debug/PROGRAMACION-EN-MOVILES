@@ -1,4 +1,4 @@
-package com.tecsup.lino.screens
+package com.tecsup.lino.Screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -27,10 +27,7 @@ fun PantallaFavoritos(
                     .padding(padding),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = "No hay productos en favoritos",
-                    style = MaterialTheme.typography.bodyLarge
-                )
+                Text(text = "No hay productos en favoritos")
             }
         } else {
             LazyColumn(
@@ -43,11 +40,8 @@ fun PantallaFavoritos(
                 items(listaFavoritos) { producto ->
                     TarjetaProducto(
                         producto = producto,
-                        esFavoritoInicial = true,
-                        onFavoritoChange = { esFavorito ->
-                            if (!esFavorito) {
-                                listaFavoritos.remove(producto)
-                            }
+                        onAgregarFavorito = {
+                            listaFavoritos.remove(producto)
                         }
                     )
                 }

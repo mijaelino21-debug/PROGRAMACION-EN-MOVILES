@@ -1,13 +1,19 @@
 package com.tecsup.lino.navigation
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 @Composable
 fun AppDrawer(
@@ -15,66 +21,71 @@ fun AppDrawer(
     cantidadFavoritos: Int,
     onNavegarA: (String) -> Unit
 ) {
-    ModalDrawerSheet {
-        // Encabezado del usuario
-        Box(
+    ModalDrawerSheet(
+        modifier = Modifier.width(300.dp)
+    ) {
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(24.dp)
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Surface(
-                    shape = MaterialTheme.shapes.small,
-                    color = MaterialTheme.colorScheme.primaryContainer,
-                    modifier = Modifier.size(48.dp)
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Avatar con tus iniciales
+                Box(
+                    modifier = Modifier
+                        .size(56.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Text(
-                            text = "MR",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                    }
+                    Text(
+                        text = "ML", // Pon aquí tus iniciales (ejemplo: Mijael Lino)
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
                 }
                 Spacer(modifier = Modifier.width(16.dp))
                 Column {
                     Text(
-                        text = "Maria Rojas",
-                        style = MaterialTheme.typography.titleMedium
+                        text = "Mijael Lino", // Pon aquí tu nombre completo
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = "maria@tecsup.edu.pe",
-                        style = MaterialTheme.typography.bodySmall
+                        text = "mijael.lino@tecsup.edu.pe", // Pon aquí tu correo institucional
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.Gray
                     )
                 }
             }
         }
 
-        Divider()
+        Divider(modifier = Modifier.padding(horizontal = 16.dp))
         Spacer(modifier = Modifier.height(12.dp))
 
-        // Opciones de navegación
+        // --- OPCIONES DE NAVEGACIÓN ---
         NavigationDrawerItem(
             label = { Text("Inicio") },
+            icon = { Icon(Icons.Default.Home, contentDescription = null) },
             selected = destinoActual == "inicio",
             onClick = { onNavegarA("inicio") },
-            icon = { Icon(Icons.Default.Home, contentDescription = null) },
-            modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp)
         )
 
         NavigationDrawerItem(
             label = { Text("Mis pedidos") },
+            icon = { Icon(Icons.Default.ShoppingBag, contentDescription = null) },
             selected = destinoActual == "pedidos",
             onClick = { onNavegarA("pedidos") },
-            icon = { Icon(Icons.Default.ShoppingCart, contentDescription = null) },
-            modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp)
         )
 
-        // Item Favoritos con Badge contador
+        // Opción Favoritos con BadgedBox para el contador reactivo
         NavigationDrawerItem(
             label = { Text("Favoritos") },
-            selected = destinoActual == "favoritos",
-            onClick = { onNavegarA("favoritos") },
             icon = {
                 BadgedBox(
                     badge = {
@@ -86,25 +97,27 @@ fun AppDrawer(
                     Icon(Icons.Default.Favorite, contentDescription = null)
                 }
             },
-            modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+            selected = destinoActual == "favoritos",
+            onClick = { onNavegarA("favoritos") },
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp)
         )
 
         NavigationDrawerItem(
             label = { Text("Perfil") },
+            icon = { Icon(Icons.Default.Person, contentDescription = null) },
             selected = destinoActual == "perfil",
             onClick = { onNavegarA("perfil") },
-            icon = { Icon(Icons.Default.Person, contentDescription = null) },
-            modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp)
         )
 
         Spacer(modifier = Modifier.weight(1f))
 
         NavigationDrawerItem(
             label = { Text("Cerrar sesión") },
-            selected = false,
-            onClick = { onNavegarA("login") },
             icon = { Icon(Icons.Default.ExitToApp, contentDescription = null) },
-            modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+            selected = false,
+            onClick = { /* Acción de salir */ },
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 12.dp)
         )
     }
 }

@@ -7,53 +7,89 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
-import com.tecsup.lino.Screens.PantallaSimple
+import androidx.compose.ui.graphics.Color
+import com.tecsup.lino.Producto
 import com.tecsup.lino.PantallaCarrito
+import com.tecsup.lino.Screens.PantallaFavoritos
+import com.tecsup.lino.Screens.PantallaSimple
+import com.tecsup.lino.ui.theme.LinoTheme
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppNavegacion() {
-    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
-    val scope = rememberCoroutineScope()
-    var destinoActual by rememberSaveable { mutableStateOf("inicio") }
-    var contadorFavoritos by rememberSaveable { mutableStateOf(0) }
+    LinoTheme {
+        val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+        val scope = rememberCoroutineScope()
+        var destinoActual by rememberSaveable { mutableStateOf("inicio") }
 
-    ModalNavigationDrawer(
-        drawerState = drawerState,
-        drawerContent = {
-            AppDrawer(
-                destinoActual = destinoActual,
-                cantidadFavoritos = contadorFavoritos,
-                onNavegarA = { nuevoDestino ->
-                    destinoActual = nuevoDestino
-                    scope.launch { drawerState.close() }
-                }
+        // Productos precargados tal como en el PDF
+        val listaProductos = remember {
+            mutableStateListOf(
+                Producto("Audífonos", 89.0, 1),
+                Producto("Smartwatch", 199.0, 1),
+                Producto("Funda celular", 25.0, 1)
             )
         }
-    ) {
-        Scaffold(
-            topBar = {
-                CenterAlignedTopAppBar(
-                    title = { Text("TECSUP Store") },
-                    navigationIcon = {
-                        IconButton(onClick = {
-                            scope.launch { drawerState.open() }
-                        }) {
-                            Icon(Icons.Default.Menu, contentDescription = "Menú")
-                        }
+        val listaFavoritos = remember { mutableStateListOf<Producto>() }
+
+        ModalNavigationDrawer(
+            drawerState = drawerState,
+            drawerContent = {
+                AppDrawer(
+                    destinoActual = destinoActual,
+                    cantidadFavoritos = listaFavoritos.size,
+                    onNavegarA = { nuevoDestino ->
+                        destinoActual = nuevoDestino
+                        scope.launch { drawerState.close() }
                     }
                 )
             }
-        ) { innerPadding ->
-            Surface(modifier = Modifier.padding(innerPadding)) {
-                when (destinoActual) {
-                    "inicio" -> PantallaCarrito(
-                        onAgregarFavorito = { contadorFavoritos++ }
+        ) {
+            Scaffold(
+                topBar = {
+                    TopAppBar(
+                        title = {
+                            Text(
+                                text = "TECSUP Store",
+                                color = Color.White
+                            )
+                        },
+                        navigationIcon = {
+                            IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                                Icon(
+                                    Icons.Default.Menu,
+                                    contentDescription = "Menú",
+                                    tint = Color.White
+                                )
+                            }
+                        },
+                        colors = TopAppBarDefaults.topAppBarColors(
+                            containerColor = MaterialTheme.colorScheme.primary
+                        )
                     )
-                    "pedidos" -> PantallaSimple(titulo = "Mis Pedidos")
-                    "favoritos" -> PantallaSimple(titulo = "Productos Favoritos ($contadorFavoritos)")
-                    "perfil" -> PantallaSimple(titulo = "Mi Perfil")
+                }
+            ) { innerPadding ->
+                Surface(modifier = Modifier.padding(innerPadding)) {
+                    when (destinoActual) {
+                        "inicio" -> PantallaCarrito(
+                            listaProductos = listaProductos,
+                            listaFavoritos = listaFavoritos,
+                            onMenuClick = { scope.launch { drawerState.open() } }
+                        )
+                        "pedidos" -> PantallaSimple(
+                            titulo = "Mis Pedidos",
+                            onMenuClick = { scope.launch { drawerState.open() } }
+                        )
+                        "favoritos" -> PantallaFavoritos(
+                            listaFavoritos = listaFavoritos,
+                            onMenuClick = { scope.launch { drawerState.open() } }
+                        )
+                        "perfil" -> PantallaSimple(
+                            titulo = "Mi Perfil",
+                            onMenuClick = { scope.launch { drawerState.open() } }
+                        )
+                    }
                 }
             }
         }

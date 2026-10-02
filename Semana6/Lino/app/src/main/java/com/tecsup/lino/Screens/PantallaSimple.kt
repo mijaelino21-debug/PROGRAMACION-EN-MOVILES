@@ -1,4 +1,4 @@
-package com.tecsup.lino.screens
+package com.tecsup.lino.Screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -8,7 +8,10 @@ import androidx.compose.ui.Modifier
 import com.tecsup.lino.navigation.BarraTienda
 
 @Composable
-fun PantallaSimple(titulo: String, onMenuClick: () -> Unit) {
+fun PantallaSimple(
+    titulo: String,
+    onMenuClick: () -> Unit
+) {
     Scaffold(
         topBar = { BarraTienda(titulo = titulo, onMenuClick = onMenuClick) }
     ) { padding ->
@@ -18,7 +21,7 @@ fun PantallaSimple(titulo: String, onMenuClick: () -> Unit) {
                 .padding(padding),
             contentAlignment = Alignment.Center
         ) {
-            Text(text = titulo, style = MaterialTheme.typography.headlineMedium)
+            Text(text = "Sección de $titulo")
         }
     }
 }

@@ -1,4 +1,4 @@
-package com.tecsup.lino.screens
+package com.tecsup.lino
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -8,8 +8,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.tecsup.lino.Producto
-import com.tecsup.lino.TarjetaProducto
 import com.tecsup.lino.navigation.BarraTienda
 
 @Composable
@@ -82,20 +80,12 @@ fun PantallaCarrito(
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 items(listaProductos) { producto ->
-                    val esFav = listaFavoritos.contains(producto)
                     TarjetaProducto(
                         producto = producto,
-                        esFavoritoInicial = esFav,
-                        onFavoritoChange = { esFavorito ->
-                            if (esFavorito) {
-                                if (!listaFavoritos.contains(producto)) listaFavoritos.add(producto)
-                            } else {
-                                listaFavoritos.remove(producto)
+                        onAgregarFavorito = {
+                            if (!listaFavoritos.contains(producto)) {
+                                listaFavoritos.add(producto)
                             }
-                        },
-                        onEliminar = {
-                            listaProductos.remove(producto)
-                            listaFavoritos.remove(producto)
                         }
                     )
                 }
