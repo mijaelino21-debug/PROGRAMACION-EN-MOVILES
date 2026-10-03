@@ -52,19 +52,12 @@ import com.tecsup.mibodega.ui.theme.BodegaTheme
 import com.tecsup.mibodega.ui.theme.GrisClaro
 import com.tecsup.mibodega.ui.theme.VerdeBodega
 
-/**
- * Pantalla 3: Inicio / Productos (mockup "Cliente").
- * La más completa: Scaffold (topBar + bottomBar), LazyRow de categorías
- * y LazyVerticalGrid de productos.
- *
- * @param productos lista completa (fake por ahora, luego vendrá de un ViewModel)
- * @param cantidadCarrito para el badge del carrito en la topBar
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InicioScreen(
     productos: List<Producto> = listaProductosFake,
     cantidadCarrito: Int,
+    onNavegar: (String) -> Unit = {},
     onVerCarrito: () -> Unit,
     onProductoClick: (Producto) -> Unit,
     onAgregarProducto: (Producto) -> Unit
@@ -99,7 +92,7 @@ fun InicioScreen(
                 }
             )
         },
-        bottomBar = { BarraInferior() }
+        bottomBar = { BarraInferior(onNavegar = onNavegar) }
     ) { paddingInterno ->
         Column(
             modifier = Modifier
@@ -163,8 +156,6 @@ fun InicioScreen(
     }
 }
 
-// Sub-composables PRIVADOS: solo los usa esta pantalla.
-
 @Composable
 private fun ChipCategoria(
     texto: String,
@@ -185,7 +176,9 @@ private fun ChipCategoria(
 }
 
 @Composable
-private fun BarraInferior() {
+private fun BarraInferior(
+    onNavegar: (String) -> Unit = {}
+) {
     var seleccionado by remember { mutableStateOf(0) }
     val items = listOf(
         Triple("Inicio", Icons.Default.Home, 0),
@@ -197,7 +190,14 @@ private fun BarraInferior() {
         items.forEach { (etiqueta, icono, indice) ->
             NavigationBarItem(
                 selected = seleccionado == indice,
-                onClick = { seleccionado = indice },
+                onClick = {
+                    seleccionado = indice
+                    when (indice) {
+                        0 -> onNavegar("inicio")
+                        1 -> onNavegar("categorias")
+                        2 -> onNavegar("pedidos")
+                    }
+                },
                 icon = { Icon(icono, contentDescription = etiqueta) },
                 label = { Text(etiqueta) },
                 colors = androidx.compose.material3.NavigationBarItemDefaults.colors(
@@ -215,6 +215,7 @@ private fun InicioPreview() {
     BodegaTheme {
         InicioScreen(
             cantidadCarrito = 3,
+            onNavegar = {},
             onVerCarrito = {},
             onProductoClick = {},
             onAgregarProducto = {}

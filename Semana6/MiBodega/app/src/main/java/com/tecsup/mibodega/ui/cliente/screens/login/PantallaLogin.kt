@@ -109,8 +109,7 @@ fun PantallaLogin(
         BotonPrimario(
             texto = "Iniciar sesión",
             onClick = {
-                if (email.trim() == "admin@bodega.com" && password == "123456") {
-                    errorLogin = false
+                if (email.trim() == "admin@bodega.com" && password.trim() == "123456") {                    errorLogin = false
                     onLoginExitoso()
                 } else {
                     errorLogin = true
