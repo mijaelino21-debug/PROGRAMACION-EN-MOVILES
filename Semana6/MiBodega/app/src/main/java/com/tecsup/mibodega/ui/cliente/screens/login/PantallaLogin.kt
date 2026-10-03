@@ -1,81 +1,126 @@
 package com.tecsup.mibodega.ui.cliente.screens.login
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.tecsup.mibodega.R
+import com.tecsup.mibodega.ui.componentes.BotonPrimario
 
 @Composable
 fun PantallaLogin(
     onLoginExitoso: () -> Unit,
     onIrACrearCuenta: () -> Unit
 ) {
-    var usuario by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var errorLogin by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+            .safeDrawingPadding()
+            .padding(horizontal = 24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Imagen de la bodega agregada desde res/drawable
+        Spacer(Modifier.height(32.dp))
+
         Image(
             painter = painterResource(id = R.drawable.ilustracion_bodega),
-            contentDescription = "Ilustración Bodega",
+            contentDescription = "Logo Mi Bodega",
             modifier = Modifier
-                .size(180.dp)
-                .padding(bottom = 16.dp)
+                .fillMaxWidth()
+                .height(180.dp)
         )
+
+        Spacer(Modifier.height(24.dp))
 
         Text(
-            text = "Mi Bodega",
-            style = MaterialTheme.typography.headlineLarge,
-            color = MaterialTheme.colorScheme.primary
+            text = "¡Bienvenido a Mi Bodega!",
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold
         )
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(Modifier.height(24.dp))
 
         OutlinedTextField(
-            value = usuario,
-            onValueChange = { usuario = it },
-            label = { Text("Usuario o correo") },
+            value = email,
+            onValueChange = {
+                email = it
+                errorLogin = false
+            },
+            label = { Text("Correo electrónico") },
+            isError = errorLogin,
+            singleLine = true,
             modifier = Modifier.fillMaxWidth(),
-            singleLine = true
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(Modifier.height(12.dp))
 
         OutlinedTextField(
             value = password,
-            onValueChange = { password = it },
+            onValueChange = {
+                password = it
+                errorLogin = false
+            },
             label = { Text("Contraseña") },
+            isError = errorLogin,
+            singleLine = true,
             visualTransformation = PasswordVisualTransformation(),
             modifier = Modifier.fillMaxWidth(),
-            singleLine = true
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
         )
 
-        Spacer(modifier = Modifier.height(24.dp))
-
-        Button(
-            onClick = { onLoginExitoso() },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Iniciar sesión")
+        if (errorLogin) {
+            Text(
+                text = "Usuario o contraseña incorrectos",
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 4.dp, start = 4.dp)
+            )
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(Modifier.height(24.dp))
 
-        TextButton(onClick = { onIrACrearCuenta() }) {
+        BotonPrimario(
+            texto = "Iniciar sesión",
+            onClick = {
+                if (email.trim() == "admin@bodega.com" && password == "123456") {
+                    errorLogin = false
+                    onLoginExitoso()
+                } else {
+                    errorLogin = true
+                }
+            }
+        )
+
+        Spacer(Modifier.height(12.dp))
+
+        TextButton(onClick = onIrACrearCuenta) {
             Text("¿No tienes cuenta? Regístrate aquí")
         }
     }
