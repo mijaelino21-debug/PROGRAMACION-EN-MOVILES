@@ -5,27 +5,42 @@ Aplicación móvil desarrollada en Android para la gestión de compras en bodega
 ---
 
 ## Capturas 
-![img.png](img.png)
+<img width="500" height="1067" alt="image" src="https://github.com/user-attachments/assets/0414f622-ae40-4812-ac0f-a6a022f80124" />
 
-![img_1.png](img_1.png)
 
-![img_2.png](img_2.png)
+<img width="576" height="1132" alt="image" src="https://github.com/user-attachments/assets/3398b2d5-dae9-4686-99ee-5b6834566d67" />
 
-![img_3.png](img_3.png)
 
-![img_4.png](img_4.png)
+<img width="525" height="1119" alt="image" src="https://github.com/user-attachments/assets/1f43f34d-76ca-4f20-bc28-64ee8058c6d1" />
 
-![img_5.png](img_5.png)
 
-![img_6.png](img_6.png)
+<img width="519" height="1102" alt="image" src="https://github.com/user-attachments/assets/a1b8c749-ac5c-4208-9456-884a14400b10" />
+
+
+<img width="530" height="1133" alt="image" src="https://github.com/user-attachments/assets/8e786c79-96ea-4523-8712-98eee4b205a0" />
+
+
+<img width="577" height="1169" alt="image" src="https://github.com/user-attachments/assets/bbf3f222-666e-4837-be13-57cfc335f4c4" />
+
+
+<img width="553" height="1176" alt="image" src="https://github.com/user-attachments/assets/72fc563c-99ed-4784-acc3-8f20777e78dc" />
+
 
 ## Capturas de las ejecuciones con ia 
 
-![img_7.png](img_7.png)
+<img width="545" height="1174" alt="image" src="https://github.com/user-attachments/assets/7cf6bcf4-6811-4aa0-b093-a1177a6b2648" />
 
-![img_10.png](img_10.png)
+Interfaz de Login mostrando la validación de error en rojo tras ingresar datos incorrectos.
 
-![img_11.png](img_11.png)
+
+<img width="547" height="1155" alt="image" src="https://github.com/user-attachments/assets/63a40e25-4ee2-4eea-9a38-cae822729f5b" />
+
+Implementación de AlertDialog para confirmar la eliminación de un producto del carrito.
+
+
+<img width="519" height="1119" alt="image" src="https://github.com/user-attachments/assets/6fd85c5d-18e6-4cbe-b0fa-9ee675ee33b8" />
+
+Validación de campos obligatorios en el formulario de Datos de Entrega con notificación visual de error.
 
 
 ##  Preguntas de Reflexión
