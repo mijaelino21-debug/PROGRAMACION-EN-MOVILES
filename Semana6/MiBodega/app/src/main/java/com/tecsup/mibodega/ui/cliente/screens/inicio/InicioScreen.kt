@@ -14,7 +14,6 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
@@ -75,7 +74,9 @@ fun InicioScreen(
 
     val productosFiltrados = productos.filter { producto ->
         val coincideCategoria = categoriaSeleccionada == "Todos" || producto.categoria == categoriaSeleccionada
-        val coincideBusqueda = true // TODO Fase 2: filtrar por textoBusqueda
+        val coincideBusqueda = textoBusqueda.isEmpty() ||
+                producto.nombre.contains(textoBusqueda, ignoreCase = true) ||
+                producto.descripcion.contains(textoBusqueda, ignoreCase = true)
         coincideCategoria && coincideBusqueda
     }
 

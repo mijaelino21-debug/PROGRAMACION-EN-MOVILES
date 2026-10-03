@@ -141,12 +141,10 @@ fun ClienteApp() {
             )
         }
 
-        composable(Rutas.ENTREGA) {
+        composable(route = Rutas.ENTREGA) {
             DatosEntregaScreen(
                 onVolver = { navController.popBackStack() },
-                onConfirmarPedido = {
-                    navController.navigate(Rutas.CONFIRMACION)
-                }
+                onConfirmarPedido = { navController.navigate(route = Rutas.CONFIRMACION) }
             )
         }
 
