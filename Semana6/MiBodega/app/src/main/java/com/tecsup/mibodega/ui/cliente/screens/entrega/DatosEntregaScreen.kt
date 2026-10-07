@@ -51,6 +51,9 @@ fun DatosEntregaScreen(
     var direccion by remember { mutableStateOf("") }
     var referencia by remember { mutableStateOf("") }
 
+    // Tipo de Entrega: "Delivery" o "Recojo"
+    var tipoEntrega by remember { mutableStateOf("Delivery") }
+
     // Validación
     var errorNombre by remember { mutableStateOf(false) }
     var errorTelefono by remember { mutableStateOf(false) }
@@ -83,6 +86,40 @@ fun DatosEntregaScreen(
         }
 
         Spacer(Modifier.height(8.dp))
+
+        // --- TIPO DE ENTREGA (NUEVO) ---
+        Text("Tipo de entrega", fontWeight = FontWeight.Bold)
+        Spacer(Modifier.height(4.dp))
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { tipoEntrega = "Delivery" }
+        ) {
+            RadioButton(
+                selected = (tipoEntrega == "Delivery"),
+                onClick = { tipoEntrega = "Delivery" },
+                colors = RadioButtonDefaults.colors(selectedColor = VerdeBodega)
+            )
+            Text("Envío a Domicilio (Delivery)", fontWeight = FontWeight.Medium)
+        }
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { tipoEntrega = "Recojo" }
+        ) {
+            RadioButton(
+                selected = (tipoEntrega == "Recojo"),
+                onClick = { tipoEntrega = "Recojo" },
+                colors = RadioButtonDefaults.colors(selectedColor = VerdeBodega)
+            )
+            Text("Recojo en Tienda (Gratis)", fontWeight = FontWeight.Medium)
+        }
+
+        Spacer(Modifier.height(16.dp))
 
         // Campo Nombre
         Text("Nombre", fontWeight = FontWeight.SemiBold)
@@ -135,45 +172,48 @@ fun DatosEntregaScreen(
             )
         }
 
-        Spacer(Modifier.height(12.dp))
+        // Si es Delivery, pide dirección obligatoria. Si es Recojo, no requiere dirección.
+        if (tipoEntrega == "Delivery") {
+            Spacer(Modifier.height(12.dp))
 
-        // Campo Dirección
-        Text("Dirección", fontWeight = FontWeight.SemiBold)
-        Spacer(Modifier.height(4.dp))
-        OutlinedTextField(
-            value = direccion,
-            onValueChange = {
-                direccion = it
-                errorDireccion = false
-            },
-            placeholder = { Text("Av. Los Olivos 123") },
-            isError = errorDireccion,
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(10.dp)
-        )
-        if (errorDireccion) {
-            Text(
-                text = "La dirección es obligatoria",
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.padding(start = 4.dp, top = 2.dp)
+            // Campo Dirección
+            Text("Dirección", fontWeight = FontWeight.SemiBold)
+            Spacer(Modifier.height(4.dp))
+            OutlinedTextField(
+                value = direccion,
+                onValueChange = {
+                    direccion = it
+                    errorDireccion = false
+                },
+                placeholder = { Text("Av. Los Olivos 123") },
+                isError = errorDireccion,
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(10.dp)
+            )
+            if (errorDireccion) {
+                Text(
+                    text = "La dirección es obligatoria para Delivery",
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(start = 4.dp, top = 2.dp)
+                )
+            }
+
+            Spacer(Modifier.height(12.dp))
+
+            // Campo Referencia
+            Text("Referencia", fontWeight = FontWeight.SemiBold)
+            Spacer(Modifier.height(4.dp))
+            OutlinedTextField(
+                value = referencia,
+                onValueChange = { referencia = it },
+                placeholder = { Text("Frente al parque") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(10.dp)
             )
         }
-
-        Spacer(Modifier.height(12.dp))
-
-        // Campo Referencia
-        Text("Referencia", fontWeight = FontWeight.SemiBold)
-        Spacer(Modifier.height(4.dp))
-        OutlinedTextField(
-            value = referencia,
-            onValueChange = { referencia = it },
-            placeholder = { Text("Frente al parque") },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(10.dp)
-        )
 
         Spacer(Modifier.height(20.dp))
 
@@ -184,7 +224,7 @@ fun DatosEntregaScreen(
         // Opción Efectivo
         FilaMetodoPago(
             nombre = "Efectivo al entregar",
-            nombreImagenDrawable = "efectivo", // Busca la imagen en res/drawable
+            nombreImagenDrawable = "efectivo",
             seleccionado = (metodoPago == "Efectivo"),
             onClick = { metodoPago = "Efectivo" }
         )
@@ -192,7 +232,7 @@ fun DatosEntregaScreen(
         // Opción Yape
         FilaMetodoPago(
             nombre = "Yape",
-            nombreImagenDrawable = "yape", // Busca la imagen en res/drawable
+            nombreImagenDrawable = "yape",
             seleccionado = (metodoPago == "Yape"),
             onClick = { metodoPago = "Yape" }
         )
@@ -200,7 +240,7 @@ fun DatosEntregaScreen(
         // Opción Plin
         FilaMetodoPago(
             nombre = "Plin",
-            nombreImagenDrawable = "plin", // Busca la imagen en res/drawable
+            nombreImagenDrawable = "plin",
             seleccionado = (metodoPago == "Plin"),
             onClick = { metodoPago = "Plin" }
         )
@@ -212,7 +252,7 @@ fun DatosEntregaScreen(
             onClick = {
                 val esNombreValido = nombre.isNotBlank()
                 val esTelefonoValido = telefono.isNotBlank()
-                val esDireccionValida = direccion.isNotBlank()
+                val esDireccionValida = (tipoEntrega == "Recojo") || direccion.isNotBlank()
 
                 errorNombre = !esNombreValido
                 errorTelefono = !esTelefonoValido
