@@ -19,12 +19,14 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.tecsup.mibodega.ui.cliente.screens.pedidos.PedidoReal
 import com.tecsup.mibodega.ui.componentes.BotonPrimario
 import com.tecsup.mibodega.ui.theme.BodegaTheme
 import com.tecsup.mibodega.ui.theme.VerdeBodega
@@ -34,8 +36,13 @@ import com.tecsup.mibodega.ui.theme.VerdeBodega
  */
 @Composable
 fun ConfirmacionScreen(
+    ultimoPedido: PedidoReal? = null,
     onVolverInicio: () -> Unit
 ) {
+    // Si viene un pedido real usa sus datos; de lo contrario genera unos dinámicos/random
+    val idPedido = ultimoPedido?.id ?: remember { "#PED-${(1000..9999).random()}" }
+    val totalPedido = ultimoPedido?.total ?: remember { "S/ %.2f".format((15..80).random() + 0.90) }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -78,14 +85,14 @@ fun ConfirmacionScreen(
 
         Card(modifier = Modifier.fillMaxWidth()) {
             Column(modifier = Modifier.padding(16.dp)) {
-                Text("Pedido #1024", fontWeight = FontWeight.Bold)
+                Text("Pedido $idPedido", fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text("Total")
-                    Text("S/ 25.90", color = VerdeBodega, fontWeight = FontWeight.Bold)
+                    Text(totalPedido, color = VerdeBodega, fontWeight = FontWeight.Bold)
                 }
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(

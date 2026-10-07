@@ -1,6 +1,7 @@
 package com.tecsup.mibodega.ui.cliente
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -108,8 +109,11 @@ fun ClienteApp() {
                 cantidadCarrito = carrito.sumOf { it.cantidad },
                 onNavegar = { ruta -> navController.navigate(ruta) },
                 onVerCarrito = { navController.navigate(Rutas.CARRITO) },
+                onVerFavoritos = { navController.navigate(Rutas.FAVORITOS) },
                 onProductoClick = { prod -> navController.navigate(Rutas.detalle(prod.id)) },
-                onAgregarProducto = { prod -> onAgregarProductoAlCarrito(prod, 1) }
+                onAgregarProducto = { prod -> onAgregarProductoAlCarrito(prod, 1) },
+                favoritosIds = favoritos,
+                onToggleFavorito = { prod -> onToggleFavorito(prod) }
             )
         }
 
@@ -184,19 +188,31 @@ fun ClienteApp() {
         }
 
         composable(route = Rutas.CONFIRMACION) {
+            // Se calcula el total y se crea el objeto del pedido en memoria antes de limpiar
+            val totalCalculado = if (carrito.isNotEmpty()) {
+                carrito.sumOf { it.producto.precio * it.cantidad }
+            } else {
+                (15..80).random().toDouble()
+            }
+
+            val nuevoPedido = remember {
+                PedidoReal(
+                    id = "#PED-${(1000..9999).random()}",
+                    fecha = "7 Oct 2026",
+                    total = "S/ %.2f".format(totalCalculado),
+                    estado = "En proceso"
+                )
+            }
+
+            // Registra el pedido en la lista global y limpia el carrito una sola vez
+            LaunchedEffect(Unit) {
+                pedidos = pedidos + nuevoPedido
+                carrito = emptyList()
+            }
+
             ConfirmacionScreen(
+                ultimoPedido = nuevoPedido,
                 onVolverInicio = {
-                    if (carrito.isNotEmpty()) {
-                        val totalCalculado = carrito.sumOf { it.producto.precio * it.cantidad }
-                        val nuevoPedido = PedidoReal(
-                            id = "#PED-00${pedidos.size + 1}",
-                            fecha = "2 Oct 2026",
-                            total = "S/ %.2f".format(totalCalculado),
-                            estado = "En proceso"
-                        )
-                        pedidos = pedidos + nuevoPedido
-                        carrito = emptyList()
-                    }
                     navController.navigate(Rutas.INICIO) {
                         popUpTo(Rutas.INICIO) { inclusive = true }
                     }
