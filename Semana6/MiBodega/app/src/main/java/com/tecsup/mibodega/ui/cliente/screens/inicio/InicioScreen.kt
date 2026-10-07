@@ -16,6 +16,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Person
@@ -41,6 +42,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -59,8 +61,11 @@ fun InicioScreen(
     cantidadCarrito: Int,
     onNavegar: (String) -> Unit = {},
     onVerCarrito: () -> Unit,
+    onVerFavoritos: () -> Unit = {},
     onProductoClick: (Producto) -> Unit,
-    onAgregarProducto: (Producto) -> Unit
+    onAgregarProducto: (Producto) -> Unit,
+    favoritosIds: Set<Int> = emptySet(),
+    onToggleFavorito: (Producto) -> Unit = {}
 ) {
     var categoriaSeleccionada by remember { mutableStateOf(listaCategorias.first()) }
     var textoBusqueda by remember { mutableStateOf("") }
@@ -78,6 +83,13 @@ fun InicioScreen(
             TopAppBar(
                 title = { Text("Mi Bodega", fontWeight = FontWeight.Bold) },
                 actions = {
+                    IconButton(onClick = onVerFavoritos) {
+                        Icon(
+                            imageVector = Icons.Default.Favorite,
+                            contentDescription = "Favoritos",
+                            tint = Color.Red
+                        )
+                    }
                     IconButton(onClick = onVerCarrito) {
                         BadgedBox(
                             badge = {
@@ -148,7 +160,9 @@ fun InicioScreen(
                     ProductoCard(
                         producto = producto,
                         onClick = { onProductoClick(producto) },
-                        onAgregar = { onAgregarProducto(producto) }
+                        onAgregar = { onAgregarProducto(producto) },
+                        esFavorito = favoritosIds.contains(producto.id),
+                        onFavoritoToggle = { onToggleFavorito(producto) }
                     )
                 }
             }
@@ -183,8 +197,9 @@ private fun BarraInferior(
     val items = listOf(
         Triple("Inicio", Icons.Default.Home, 0),
         Triple("Categorías", Icons.Default.List, 1),
-        Triple("Pedidos", Icons.Default.Receipt, 2),
-        Triple("Perfil", Icons.Default.Person, 3)
+        Triple("Favoritos", Icons.Default.Favorite, 2),
+        Triple("Pedidos", Icons.Default.Receipt, 3),
+        Triple("Perfil", Icons.Default.Person, 4)
     )
     NavigationBar {
         items.forEach { (etiqueta, icono, indice) ->
@@ -195,7 +210,8 @@ private fun BarraInferior(
                     when (indice) {
                         0 -> onNavegar("inicio")
                         1 -> onNavegar("categorias")
-                        2 -> onNavegar("pedidos")
+                        2 -> onNavegar("favoritos")
+                        3 -> onNavegar("pedidos")
                     }
                 },
                 icon = { Icon(icono, contentDescription = etiqueta) },

@@ -9,6 +9,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.tecsup.mibodega.ui.cliente.modelo.ItemCarrito
+import com.tecsup.mibodega.ui.cliente.modelo.Producto
 import com.tecsup.mibodega.ui.cliente.modelo.listaProductosFake
 import com.tecsup.mibodega.ui.cliente.screens.bienvenida.BienvenidaScreen
 import com.tecsup.mibodega.ui.cliente.screens.carrito.CarritoScreen
@@ -16,6 +17,7 @@ import com.tecsup.mibodega.ui.cliente.screens.categorias.CategoriasScreen
 import com.tecsup.mibodega.ui.cliente.screens.confirmacion.ConfirmacionScreen
 import com.tecsup.mibodega.ui.cliente.screens.detalle.DetalleProductoScreen
 import com.tecsup.mibodega.ui.cliente.screens.entrega.DatosEntregaScreen
+import com.tecsup.mibodega.ui.cliente.screens.favoritos.FavoritosScreen
 import com.tecsup.mibodega.ui.cliente.screens.inicio.InicioScreen
 import com.tecsup.mibodega.ui.cliente.screens.login.PantallaLogin
 import com.tecsup.mibodega.ui.cliente.screens.pedidos.PedidoReal
@@ -33,6 +35,7 @@ private object Rutas {
     const val CONFIRMACION = "confirmacion"
     const val CATEGORIAS = "categorias"
     const val PEDIDOS = "pedidos"
+    const val FAVORITOS = "favoritos"
 
     fun detalle(productoId: Int) = "detalle/$productoId"
 }
@@ -42,6 +45,29 @@ fun ClienteApp() {
     val navController = rememberNavController()
     var carrito by remember { mutableStateOf<List<ItemCarrito>>(emptyList()) }
     var pedidos by remember { mutableStateOf<List<PedidoReal>>(emptyList()) }
+
+    // Estado global para guardar los productos marcados como favoritos
+    var favoritos by remember { mutableStateOf<Set<Int>>(emptySet()) }
+
+    val onToggleFavorito = { producto: Producto ->
+        favoritos = if (favoritos.contains(producto.id)) {
+            favoritos - producto.id
+        } else {
+            favoritos + producto.id
+        }
+    }
+
+    val onAgregarProductoAlCarrito = { prod: Producto, cantidad: Int ->
+        val existe = carrito.find { it.producto.id == prod.id }
+        carrito = if (existe != null) {
+            carrito.map { item ->
+                if (item.producto.id == prod.id) item.copy(cantidad = item.cantidad + cantidad)
+                else item
+            }
+        } else {
+            carrito + ItemCarrito(producto = prod, cantidad = cantidad)
+        }
+    }
 
     NavHost(
         navController = navController,
@@ -83,17 +109,7 @@ fun ClienteApp() {
                 onNavegar = { ruta -> navController.navigate(ruta) },
                 onVerCarrito = { navController.navigate(Rutas.CARRITO) },
                 onProductoClick = { prod -> navController.navigate(Rutas.detalle(prod.id)) },
-                onAgregarProducto = { prod ->
-                    val existe = carrito.find { it.producto.id == prod.id }
-                    carrito = if (existe != null) {
-                        carrito.map { item ->
-                            if (item.producto.id == prod.id) item.copy(cantidad = item.cantidad + 1)
-                            else item
-                        }
-                    } else {
-                        carrito + ItemCarrito(producto = prod, cantidad = 1)
-                    }
-                }
+                onAgregarProducto = { prod -> onAgregarProductoAlCarrito(prod, 1) }
             )
         }
 
@@ -104,21 +120,26 @@ fun ClienteApp() {
             if (prodSeleccionado != null) {
                 DetalleProductoScreen(
                     producto = prodSeleccionado,
+                    esFavorito = favoritos.contains(prodSeleccionado.id),
+                    onToggleFavorito = { onToggleFavorito(prodSeleccionado) },
                     onVolver = { navController.popBackStack() },
                     onAgregarAlCarrito = { prod, cant ->
-                        val existe = carrito.find { it.producto.id == prod.id }
-                        carrito = if (existe != null) {
-                            carrito.map { item ->
-                                if (item.producto.id == prod.id) item.copy(cantidad = item.cantidad + cant)
-                                else item
-                            }
-                        } else {
-                            carrito + ItemCarrito(producto = prod, cantidad = cant)
-                        }
+                        onAgregarProductoAlCarrito(prod, cant)
                         navController.popBackStack()
                     }
                 )
             }
+        }
+
+        composable(route = Rutas.FAVORITOS) {
+            val productosFavoritosList = listaProductosFake.filter { favoritos.contains(it.id) }
+
+            FavoritosScreen(
+                productosFavoritos = productosFavoritosList,
+                onFavoritoToggle = { prod -> onToggleFavorito(prod) },
+                onAgregarAlCarrito = { prod -> onAgregarProductoAlCarrito(prod, 1) },
+                onProductoClick = { prod -> navController.navigate(Rutas.detalle(prod.id)) }
+            )
         }
 
         composable(route = Rutas.CARRITO) {
