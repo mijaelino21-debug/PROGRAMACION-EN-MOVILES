@@ -8,8 +8,10 @@ import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -18,23 +20,25 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.tecsup.ayudacampus.model.Rol
+import com.tecsup.ayudacampus.ui.cliente.DetalleTicketScreen
 import com.tecsup.ayudacampus.ui.cliente.LoginScreen
 import com.tecsup.ayudacampus.ui.cliente.MisTicketsScreen
+import com.tecsup.ayudacampus.ui.cliente.NuevoTicketScreen
 import com.tecsup.ayudacampus.ui.cliente.SplashScreen
 import com.tecsup.ayudacampus.ui.soporte.CategoriasScreen
 import com.tecsup.ayudacampus.viewmodel.AyudaViewModelFactory
 import com.tecsup.ayudacampus.viewmodel.CategoriasViewModel
 import com.tecsup.ayudacampus.viewmodel.MisTicketsViewModel
-import com.tecsup.ayudacampus.viewmodel.SesionViewModel
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBarItemDefaults
-import com.tecsup.ayudacampus.ui.cliente.NuevoTicketScreen
 import com.tecsup.ayudacampus.viewmodel.NuevoTicketViewModel
+import com.tecsup.ayudacampus.viewmodel.SesionViewModel
+import com.tecsup.ayudacampus.viewmodel.TicketDetalleViewModel
 
 // Barra inferior del Estudiante
 private val itemsEstudiante = listOf(
@@ -70,17 +74,19 @@ fun NavAyuda(factory: AyudaViewModelFactory) {
 
     Scaffold(
         bottomBar = {
-            if (rutaActual in itemsEstudiante.map { it.first }) {
-                NavigationBar {
+            if (rutaActual in itemsEstudiante.map { it.first } + Rutas.DETALLE_TICKET) {
+                NavigationBar(containerColor = MaterialTheme.colorScheme.surface) {
                     itemsEstudiante.forEach { (ruta, texto, icono) ->
                         NavigationBarItem(
-                            selected = rutaActual == ruta,
+                            selected = rutaActual == ruta ||
+                                    (ruta == Rutas.MIS_TICKETS && rutaActual == Rutas.DETALLE_TICKET),
                             onClick = { irA(ruta) },
                             icon = { Icon(icono, contentDescription = texto) },
                             label = { Text(texto) },
                             colors = NavigationBarItemDefaults.colors(
                                 indicatorColor = MaterialTheme.colorScheme.primaryContainer
-                            ))
+                            )
+                        )
                     }
                 }
             }
@@ -120,7 +126,6 @@ fun NavAyuda(factory: AyudaViewModelFactory) {
                 )
             }
 
-            // Pantallas temporales
             composable(Rutas.NUEVO_TICKET) {
                 val vm: NuevoTicketViewModel = viewModel(factory = factory)
                 NuevoTicketScreen(
@@ -129,7 +134,17 @@ fun NavAyuda(factory: AyudaViewModelFactory) {
                     onEnviado = { navController.popBackStack(Rutas.MIS_TICKETS, inclusive = false) }
                 )
             }
-            composable(Rutas.DETALLE_TICKET) { Pendiente("Detalle del ticket") }
+
+            composable(
+                Rutas.DETALLE_TICKET,
+                arguments = listOf(navArgument("ticketId") { type = NavType.IntType })
+            ) { entry ->
+                val id = entry.arguments?.getInt("ticketId") ?: 0
+                val vm: TicketDetalleViewModel = viewModel(factory = factory)
+                DetalleTicketScreen(vm = vm, ticketId = id, onVolver = { navController.popBackStack() })
+            }
+
+            // Pantallas temporales
             composable(Rutas.PERFIL) { Pendiente("Perfil") }
             composable(Rutas.PANEL) { Pendiente("Panel de soporte") }
 
