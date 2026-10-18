@@ -43,14 +43,16 @@ fun LoginScreen(vm: SesionViewModel, onLoginExitoso: (String) -> Unit) {
 
     val error by vm.error.collectAsState()
     val usuario by vm.usuarioActual.collectAsState()
+    val oscuro by vm.modoOscuro.collectAsState()
 
-    // Cuando el login sale bien, avisa hacia afuera para navegar
+
+    // Cuando el login sale bien, avisa para navegar
     LaunchedEffect(usuario) {
         usuario?.let { onLoginExitoso(it.rol) }
     }
 
-    // El tema cambia segun la pestaña: cian (Estudiante) o violeta (Soporte)
-    AyudaTheme(rol = rol) {
+    // El tema cambia segun la pestaña segun  cian (Estudiante) o violeta (Soporte) y tambien el modo oscuro
+    AyudaTheme(rol = rol, modoOscuro = oscuro) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -62,7 +64,6 @@ fun LoginScreen(vm: SesionViewModel, onLoginExitoso: (String) -> Unit) {
             Text("Ingresa para continuar", color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.height(24.dp))
 
-            // Selector Estudiante / Soporte TI
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -104,6 +105,7 @@ fun LoginScreen(vm: SesionViewModel, onLoginExitoso: (String) -> Unit) {
         }
     }
 }
+
 
 @Composable
 private fun BotonRol(texto: String, seleccionado: Boolean, modifier: Modifier, onClick: () -> Unit) {

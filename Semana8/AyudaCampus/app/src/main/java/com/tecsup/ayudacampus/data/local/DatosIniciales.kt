@@ -30,7 +30,7 @@ object DatosIniciales {
         // 2 usuarios: estudiante (id 1) y soporte (id 2)
         db.usuarioDao().insertarTodos(
             listOf(
-                Usuario(nombre = "Juan Pérez", correo = "juan@campus.test", clave = "1234", rol = Rol.CLIENTE.name),
+                Usuario(nombre = "Mijael Lino", correo = "mijael@campus.test", clave = "1234", rol = Rol.CLIENTE.name),
                 Usuario(nombre = "Soporte TI", correo = "soporte@campus.test", clave = "admin", rol = Rol.ADMIN.name)
             )
         )
@@ -87,7 +87,7 @@ object DatosIniciales {
                 texto = "Revisaremos el access point del pabellón B hoy.", fecha = ahora - 90 * 60 * 1000L)
         )
         dao.insertarComentario(
-            Comentario(ticketId = t1, autorId = 1, autorNombre = "Juan Pérez", autorRol = Rol.CLIENTE.name,
+            Comentario(ticketId = t1, autorId = 1, autorNombre = "Mijael Lino", autorRol = Rol.CLIENTE.name,
                 texto = "Gracias, quedo atento.", fecha = ahora - 80 * 60 * 1000L)
         )
         dao.insertarComentario(

@@ -44,8 +44,17 @@ class MisTicketsViewModel(
             }
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
+    // Contadores (Mis tickets y Perfil)
     val abiertos: StateFlow<Int> = misTickets
         .map { lista -> lista.count { it.ticket.estado == EstadoTicket.ABIERTO.name } }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+
+    val resueltos: StateFlow<Int> = misTickets
+        .map { lista -> lista.count { it.ticket.estado == EstadoTicket.RESUELTO.name } }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+
+    val total: StateFlow<Int> = misTickets
+        .map { it.size }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
 
     val nombre: StateFlow<String> = misTickets

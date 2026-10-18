@@ -15,4 +15,12 @@ interface UsuarioDao {
 
     @Query("SELECT COUNT(*) FROM usuarios")
     suspend fun contar(): Int
+
+    // Para mostrar los datos del usuario al reabrir la app
+    @Query("SELECT * FROM usuarios WHERE id = :id")
+    suspend fun buscarPorId(id: Int): Usuario?
+
+    // Para "Cambiar de perfil"y encontrar al otro usuario
+    @Query("SELECT * FROM usuarios WHERE rol = :rol LIMIT 1")
+    suspend fun buscarPorRol(rol: String): Usuario?
 }

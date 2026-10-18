@@ -50,6 +50,15 @@ import com.tecsup.ayudacampus.viewmodel.NuevoTicketViewModel
 import com.tecsup.ayudacampus.viewmodel.PanelViewModel
 import com.tecsup.ayudacampus.viewmodel.SesionViewModel
 import com.tecsup.ayudacampus.viewmodel.TicketDetalleViewModel
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import com.tecsup.ayudacampus.ui.cliente.PerfilScreen
+import com.tecsup.ayudacampus.ui.soporte.AjustesScreen
 
 // Barras inferiores: 3 items Estudiante, 4 items Soporte
 private val itemsEstudiante = listOf(
@@ -69,6 +78,8 @@ fun NavAyuda(factory: AyudaViewModelFactory) {
     val navController = rememberNavController()
     val sesionVm: SesionViewModel = viewModel(factory = factory)
     val perfil by sesionVm.perfilActivo.collectAsState()
+    val modoOscuro by sesionVm.modoOscuro.collectAsState()
+    val recibirTickets by sesionVm.recibirTickets.collectAsState()
     val esSoporte = perfil == Rol.ADMIN.name
 
     val entrada by navController.currentBackStackEntryAsState()
@@ -91,13 +102,23 @@ fun NavAyuda(factory: AyudaViewModelFactory) {
         }
     }
 
+    // Guarda el otro perfil y navega a su grafo
+    fun cambiarPerfil() = sesionVm.cambiarPerfil { rol -> irAInicio(rol) }
+
+    // Borra el perfil y vuelve al Login
+    fun cerrarSesion() = sesionVm.cerrarSesion {
+        navController.navigate(Rutas.LOGIN) {
+            popUpTo(navController.graph.id) { inclusive = true }
+        }
+    }
+
     val barra = when (rutaActual) {
         in itemsEstudiante.map { it.first } + Rutas.DETALLE_TICKET -> itemsEstudiante
         in itemsSoporte.map { it.first } + Rutas.ATENDER_TICKET + Rutas.FORMULARIO_CATEGORIA -> itemsSoporte
         else -> null
     }
 
-    AyudaTheme(rol = if (esSoporte) Rol.ADMIN else Rol.CLIENTE) {
+    AyudaTheme(rol = if (esSoporte) Rol.ADMIN else Rol.CLIENTE, modoOscuro = modoOscuro) {
         Scaffold(
             bottomBar = {
                 if (barra != null) {
@@ -156,12 +177,17 @@ fun NavAyuda(factory: AyudaViewModelFactory) {
                 }
 
                 composable(Rutas.NUEVO_TICKET) {
-                    val vm: NuevoTicketViewModel = viewModel(factory = factory)
-                    NuevoTicketScreen(
-                        vm = vm,
-                        onVolver = { navController.popBackStack() },
-                        onEnviado = { navController.popBackStack(Rutas.MIS_TICKETS, inclusive = false) }
-                    )
+                    // Si Soporte apago "Recibir tickets", no se puede crear
+                    if (!recibirTickets) {
+                        MesaCerrada()
+                    } else {
+                        val vm: NuevoTicketViewModel = viewModel(factory = factory)
+                        NuevoTicketScreen(
+                            vm = vm,
+                            onVolver = { navController.popBackStack() },
+                            onEnviado = { navController.popBackStack(Rutas.MIS_TICKETS, inclusive = false) }
+                        )
+                    }
                 }
 
                 composable(
@@ -215,16 +241,40 @@ fun NavAyuda(factory: AyudaViewModelFactory) {
                 }
 
                 // Pantallas temporales
-                composable(Rutas.AJUSTES) { Pendiente("Ajustes") }
-                composable(Rutas.PERFIL) { Pendiente("Perfil") }
+                composable(Rutas.PERFIL) {
+                    val ticketsVm: MisTicketsViewModel = viewModel(factory = factory)
+                    PerfilScreen(
+                        sesionVm = sesionVm,
+                        ticketsVm = ticketsVm,
+                        onCambiarPerfil = { cambiarPerfil() },
+                        onCerrarSesion = { cerrarSesion() }
+                    )
+                }
+
+                composable(Rutas.AJUSTES) {
+                    AjustesScreen(
+                        vm = sesionVm,
+                        onCambiarPerfil = { cambiarPerfil() },
+                        onCerrarSesion = { cerrarSesion() }
+                    )
+                }
             }
         }
     }
 }
 
 @Composable
-private fun Pendiente(texto: String) {
-    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text(texto)
+private fun MesaCerrada() {
+    Column(
+        Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .padding(32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Icon(Icons.Default.Lock, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(56.dp))
+        Text("Mesa de ayuda cerrada", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+        Text("Por ahora no se pueden crear tickets.", color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
