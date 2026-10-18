@@ -33,6 +33,8 @@ import com.tecsup.ayudacampus.viewmodel.MisTicketsViewModel
 import com.tecsup.ayudacampus.viewmodel.SesionViewModel
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBarItemDefaults
+import com.tecsup.ayudacampus.ui.cliente.NuevoTicketScreen
+import com.tecsup.ayudacampus.viewmodel.NuevoTicketViewModel
 
 // Barra inferior del Estudiante
 private val itemsEstudiante = listOf(
@@ -119,7 +121,14 @@ fun NavAyuda(factory: AyudaViewModelFactory) {
             }
 
             // Pantallas temporales
-            composable(Rutas.NUEVO_TICKET) { Pendiente("Nuevo ticket") }
+            composable(Rutas.NUEVO_TICKET) {
+                val vm: NuevoTicketViewModel = viewModel(factory = factory)
+                NuevoTicketScreen(
+                    vm = vm,
+                    onVolver = { navController.popBackStack() },
+                    onEnviado = { navController.popBackStack(Rutas.MIS_TICKETS, inclusive = false) }
+                )
+            }
             composable(Rutas.DETALLE_TICKET) { Pendiente("Detalle del ticket") }
             composable(Rutas.PERFIL) { Pendiente("Perfil") }
             composable(Rutas.PANEL) { Pendiente("Panel de soporte") }
