@@ -14,7 +14,8 @@ class AyudaViewModelFactory(
     override fun <T : ViewModel> create(modelClass: Class<T>): T = when {
         modelClass.isAssignableFrom(CategoriasViewModel::class.java) -> CategoriasViewModel(repo) as T
         modelClass.isAssignableFrom(SesionViewModel::class.java) -> SesionViewModel(repo, prefs) as T
-        // TODO: agrega aqui cada ViewModel nuevo (pasos 7 al 12)
+        modelClass.isAssignableFrom(MisTicketsViewModel::class.java) -> MisTicketsViewModel(repo, prefs) as T
+
         else -> throw IllegalArgumentException("ViewModel desconocido: ${modelClass.name}")
     }
 }
