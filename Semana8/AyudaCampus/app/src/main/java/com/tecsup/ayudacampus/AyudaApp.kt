@@ -17,8 +17,7 @@ class AyudaApp : Application() {
     override fun onCreate() {
         super.onCreate()
         val db = AyudaDatabase.obtener(this)
-        repository = AyudaRepositoryRoom(db.categoriaDao())
-
+        repository = AyudaRepositoryRoom(db.categoriaDao(), db.usuarioDao(), db.ticketDao())
         CoroutineScope(Dispatchers.IO).launch {
             DatosIniciales.sembrar(db)
         }
