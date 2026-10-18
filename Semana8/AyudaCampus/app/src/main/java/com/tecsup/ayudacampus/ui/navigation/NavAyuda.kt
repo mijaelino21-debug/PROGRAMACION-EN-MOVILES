@@ -35,10 +35,13 @@ import com.tecsup.ayudacampus.ui.cliente.LoginScreen
 import com.tecsup.ayudacampus.ui.cliente.MisTicketsScreen
 import com.tecsup.ayudacampus.ui.cliente.NuevoTicketScreen
 import com.tecsup.ayudacampus.ui.cliente.SplashScreen
+import com.tecsup.ayudacampus.ui.soporte.AtenderTicketScreen
 import com.tecsup.ayudacampus.ui.soporte.BandejaScreen
 import com.tecsup.ayudacampus.ui.soporte.CategoriasScreen
+import com.tecsup.ayudacampus.ui.soporte.FormularioCategoriaScreen
 import com.tecsup.ayudacampus.ui.soporte.PanelScreen
 import com.tecsup.ayudacampus.ui.theme.AyudaTheme
+import com.tecsup.ayudacampus.viewmodel.AtenderViewModel
 import com.tecsup.ayudacampus.viewmodel.AyudaViewModelFactory
 import com.tecsup.ayudacampus.viewmodel.BandejaViewModel
 import com.tecsup.ayudacampus.viewmodel.CategoriasViewModel
@@ -90,7 +93,7 @@ fun NavAyuda(factory: AyudaViewModelFactory) {
 
     val barra = when (rutaActual) {
         in itemsEstudiante.map { it.first } + Rutas.DETALLE_TICKET -> itemsEstudiante
-        in itemsSoporte.map { it.first } + Rutas.ATENDER_TICKET -> itemsSoporte
+        in itemsSoporte.map { it.first } + Rutas.ATENDER_TICKET + Rutas.FORMULARIO_CATEGORIA -> itemsSoporte
         else -> null
     }
 
@@ -103,7 +106,8 @@ fun NavAyuda(factory: AyudaViewModelFactory) {
                             NavigationBarItem(
                                 selected = rutaActual == ruta ||
                                         (ruta == Rutas.MIS_TICKETS && rutaActual == Rutas.DETALLE_TICKET) ||
-                                        (ruta == Rutas.BANDEJA && rutaActual == Rutas.ATENDER_TICKET),
+                                        (ruta == Rutas.BANDEJA && rutaActual == Rutas.ATENDER_TICKET) ||
+                                        (ruta == Rutas.CATEGORIAS && rutaActual == Rutas.FORMULARIO_CATEGORIA),
                                 onClick = { irA(ruta) },
                                 icon = { Icon(icono, contentDescription = texto) },
                                 label = { Text(texto) },
@@ -183,13 +187,34 @@ fun NavAyuda(factory: AyudaViewModelFactory) {
                     )
                 }
 
+                composable(
+                    Rutas.ATENDER_TICKET,
+                    arguments = listOf(navArgument("ticketId") { type = NavType.IntType })
+                ) { entry ->
+                    val id = entry.arguments?.getInt("ticketId") ?: 0
+                    val vm: AtenderViewModel = viewModel(factory = factory)
+                    AtenderTicketScreen(vm = vm, ticketId = id, onVolver = { navController.popBackStack() })
+                }
+
                 composable(Rutas.CATEGORIAS) {
                     val vm: CategoriasViewModel = viewModel(factory = factory)
-                    CategoriasScreen(vm = vm, onEditar = { })
+                    CategoriasScreen(
+                        vm = vm,
+                        onEditar = { id -> navController.navigate(Rutas.formularioCategoria(id)) },
+                        onNueva = { navController.navigate(Rutas.formularioCategoria(0)) }
+                    )
+                }
+
+                composable(
+                    Rutas.FORMULARIO_CATEGORIA,
+                    arguments = listOf(navArgument("categoriaId") { type = NavType.IntType })
+                ) { entry ->
+                    val id = entry.arguments?.getInt("categoriaId") ?: 0
+                    val vm: CategoriasViewModel = viewModel(factory = factory)
+                    FormularioCategoriaScreen(vm = vm, categoriaId = id, onListo = { navController.popBackStack() })
                 }
 
                 // Pantallas temporales
-                composable(Rutas.ATENDER_TICKET) { Pendiente("Atender ticket") }
                 composable(Rutas.AJUSTES) { Pendiente("Ajustes") }
                 composable(Rutas.PERFIL) { Pendiente("Perfil") }
             }
