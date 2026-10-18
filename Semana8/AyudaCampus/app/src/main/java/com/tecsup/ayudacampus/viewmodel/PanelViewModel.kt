@@ -45,4 +45,24 @@ class PanelViewModel(repo: AyudaRepository) : ViewModel() {
     val altasSinAtender: StateFlow<Int> =
         repo.observarAltasSinAtender(System.currentTimeMillis() - 60 * 60 * 1000L)
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+
+    val tiempoPromedioResolucion: StateFlow<String> = repo.observarTiempoPromedioResolucion()
+        .map { ms -> formatearTiempo(ms) }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "N/A")
+
+    private fun formatearTiempo(ms: Double?): String {
+        if (ms == null || ms <= 0) return "N/A"
+        val totalMin = (ms / 60_000).toLong()
+        val horas = totalMin / 60
+        val minRestantes = totalMin % 60
+        val dias = horas / 24
+        val horasRestantes = horas % 24
+
+        return when {
+            dias > 0 -> if (horasRestantes > 0) "${dias} d ${horasRestantes} h" else "${dias} d"
+            horas > 0 -> if (minRestantes > 0) "${horas} h ${minRestantes} min" else "${horas} h"
+            totalMin > 0 -> "$totalMin min"
+            else -> "< 1 min"
+        }
+    }
 }

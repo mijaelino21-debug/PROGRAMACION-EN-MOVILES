@@ -95,4 +95,7 @@ class AyudaRepositoryRoom(
 
     override fun observarAltasSinAtender(limite: Long): Flow<Int> =
         ticketDao.contarAltasSinAtender(limite)
+
+    override fun observarTiempoPromedioResolucion(): Flow<Double?> =
+        ticketDao.obtenerTiempoPromedioResolucion()
 }

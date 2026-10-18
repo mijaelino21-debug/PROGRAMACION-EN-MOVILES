@@ -46,6 +46,7 @@ fun PanelScreen(vm: PanelViewModel, onVerAltas: () -> Unit) {
     val porEstado by vm.porEstado.collectAsState()
     val porCategoria by vm.porCategoria.collectAsState()
     val altas by vm.altasSinAtender.collectAsState()
+    val tiempoPromedio by vm.tiempoPromedioResolucion.collectAsState()
 
     Column(
         Modifier
@@ -64,6 +65,40 @@ fun PanelScreen(vm: PanelViewModel, onVerAltas: () -> Unit) {
             Contador(abiertos, "Abiertos", ColorAbierto, Modifier.weight(1f))
             Contador(enProceso, "En proceso", ColorEnProceso, Modifier.weight(1f))
             Contador(resueltos, "Resueltos", ColorResuelto, Modifier.weight(1f))
+        }
+
+        ElevatedCard(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surface)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        "Tiempo promedio de resolución",
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        "Tickets cerrados",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    text = tiempoPromedio,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary,
+                    maxLines = 1,
+                    softWrap = false
+                )
+            }
         }
 
         Tarjeta("Tickets por estado") { GraficoDona(datos = porEstado) }
