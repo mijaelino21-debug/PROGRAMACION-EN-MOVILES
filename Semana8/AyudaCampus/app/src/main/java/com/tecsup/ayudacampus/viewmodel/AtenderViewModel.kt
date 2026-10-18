@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.tecsup.ayudacampus.data.local.entity.Ticket
 import com.tecsup.ayudacampus.data.local.entity.Usuario
 import com.tecsup.ayudacampus.data.local.relation.TicketConDetalle
 import com.tecsup.ayudacampus.data.prefs.PreferenciasStore
@@ -77,4 +78,6 @@ class AtenderViewModel(
             guardado = true
         }
     }
+
+    fun calcularSla(ticket: Ticket): String = SlaUtils.calcularSla(ticket)
 }

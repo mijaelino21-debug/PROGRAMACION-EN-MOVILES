@@ -86,7 +86,19 @@ fun AtenderTicketScreen(vm: AtenderViewModel, ticketId: Int, onVolver: () -> Uni
                 colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surface)
             ) {
                 Column(Modifier.padding(16.dp)) {
-                    Text(t.titulo, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(t.titulo, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+                        Text(
+                            text = vm.calcularSla(t),
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = if (vm.calcularSla(t).contains("Vencido")) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
+                        )
+                    }
                     Text(
                         "${d.cliente.nombre} · ${t.ubicacion} · ${d.categoria.nombre}",
                         style = MaterialTheme.typography.bodySmall,

@@ -2,6 +2,7 @@ package com.tecsup.ayudacampus.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.tecsup.ayudacampus.data.local.entity.Ticket
 import com.tecsup.ayudacampus.data.local.relation.TicketConDetalle
 import com.tecsup.ayudacampus.data.repository.AyudaRepository
 import com.tecsup.ayudacampus.model.EstadoTicket
@@ -23,4 +24,6 @@ class BandejaViewModel(repo: AyudaRepository) : ViewModel() {
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     fun cambiarFiltro(estado: EstadoTicket?) { _filtro.value = estado }
+    fun calcularSla(ticket: Ticket): String = SlaUtils.calcularSla(ticket)
+    fun calcularHace(fecha: Long): String = SlaUtils.calcularHace(fecha)
 }

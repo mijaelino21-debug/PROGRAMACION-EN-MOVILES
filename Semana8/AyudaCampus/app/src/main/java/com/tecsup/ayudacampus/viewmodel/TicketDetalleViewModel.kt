@@ -2,6 +2,7 @@ package com.tecsup.ayudacampus.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.tecsup.ayudacampus.data.local.entity.Ticket
 import com.tecsup.ayudacampus.data.local.relation.TicketConDetalle
 import com.tecsup.ayudacampus.data.repository.AyudaRepository
 import com.tecsup.ayudacampus.model.EstadoTicket
@@ -50,4 +51,6 @@ class TicketDetalleViewModel(private val repo: AyudaRepository) : ViewModel() {
         if (t.ticket.estado != EstadoTicket.RESUELTO.name) return
         viewModelScope.launch { repo.reabrir(t.ticket.id) }
     }
+
+    fun calcularSla(ticket: Ticket): String = SlaUtils.calcularSla(ticket)
 }

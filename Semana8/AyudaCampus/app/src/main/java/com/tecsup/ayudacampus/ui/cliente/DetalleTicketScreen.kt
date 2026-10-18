@@ -91,11 +91,23 @@ fun DetalleTicketScreen(vm: TicketDetalleViewModel, ticketId: Int, onVolver: () 
                         PrioridadChip(Prioridad.valueOf(t.prioridad))
                     }
                     Spacer(Modifier.height(6.dp))
-                    Text(
-                        "${d.categoria.nombre} · ${t.ubicacion}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            "${d.categoria.nombre} · ${t.ubicacion}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Text(
+                            text = vm.calcularSla(t),
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = if (vm.calcularSla(t).contains("Vencido")) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
+                        )
+                    }
                 }
             }
 

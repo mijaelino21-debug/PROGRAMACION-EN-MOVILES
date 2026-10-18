@@ -99,7 +99,8 @@ fun MisTicketsScreen(
                             icono = t.categoria.icono,
                             estado = EstadoTicket.valueOf(t.ticket.estado),
                             prioridad = Prioridad.valueOf(t.ticket.prioridad),
-                            tiempo = hace(t.ticket.fecha),
+                            tiempo = vm.calcularHace(t.ticket.fecha),
+                            sla = vm.calcularSla(t.ticket),
                             onClick = { onAbrirTicket(t.ticket.id) }
                         )
                     }
@@ -115,14 +116,5 @@ fun MisTicketsScreen(
         ) {
             Icon(Icons.Default.Add, contentDescription = "Nuevo ticket")
         }
-    }
-}
-
-private fun hace(fecha: Long): String {
-    val min = (System.currentTimeMillis() - fecha) / 60_000
-    return when {
-        min < 60 -> "Hace $min min"
-        min < 60 * 24 -> "Hace ${min / 60} h"
-        else -> "Hace ${min / (60 * 24)} d"
     }
 }

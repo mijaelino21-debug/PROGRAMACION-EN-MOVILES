@@ -2,6 +2,7 @@ package com.tecsup.ayudacampus.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.tecsup.ayudacampus.data.local.entity.Ticket
 import com.tecsup.ayudacampus.data.local.relation.TicketConDetalle
 import com.tecsup.ayudacampus.data.prefs.PreferenciasStore
 import com.tecsup.ayudacampus.data.repository.AyudaRepository
@@ -63,4 +64,6 @@ class MisTicketsViewModel(
 
     fun cambiarFiltro(estado: EstadoTicket?) { _filtro.value = estado }
     fun cambiarBusqueda(texto: String) { _busqueda.value = texto }
+    fun calcularSla(ticket: Ticket): String = SlaUtils.calcularSla(ticket)
+    fun calcularHace(fecha: Long): String = SlaUtils.calcularHace(fecha)
 }

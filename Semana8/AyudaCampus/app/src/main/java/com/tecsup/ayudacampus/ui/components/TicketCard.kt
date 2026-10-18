@@ -46,6 +46,7 @@ fun TicketCard(
     estado: EstadoTicket,
     prioridad: Prioridad,
     tiempo: String,
+    sla: String = "",
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -100,11 +101,25 @@ fun TicketCard(
                     }
                 }
                 Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = tiempo,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                Column(
+                    horizontalAlignment = Alignment.End,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = tiempo,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    if (sla.isNotBlank()) {
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = sla,
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Medium,
+                            color = if (sla.contains("Vencido")) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
             }
         }
     }
