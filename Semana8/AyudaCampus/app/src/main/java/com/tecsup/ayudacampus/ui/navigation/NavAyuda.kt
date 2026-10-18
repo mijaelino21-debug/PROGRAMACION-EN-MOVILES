@@ -1,39 +1,75 @@
 package com.tecsup.ayudacampus.ui.navigation
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.tecsup.ayudacampus.model.Rol
+import com.tecsup.ayudacampus.ui.cliente.LoginScreen
 import com.tecsup.ayudacampus.ui.cliente.SplashScreen
 import com.tecsup.ayudacampus.ui.soporte.CategoriasScreen
 import com.tecsup.ayudacampus.viewmodel.AyudaViewModelFactory
 import com.tecsup.ayudacampus.viewmodel.CategoriasViewModel
+import com.tecsup.ayudacampus.viewmodel.SesionViewModel
 
 @Composable
 fun NavAyuda(factory: AyudaViewModelFactory) {
     val navController = rememberNavController()
+    val sesionVm: SesionViewModel = viewModel(factory = factory)
+    val perfil by sesionVm.perfilActivo.collectAsState()
+
+    // Va a la pantalla principal del rol y limpia la pila
+    fun irAInicio(rol: String) {
+        val destino = if (rol == Rol.ADMIN.name) Rutas.PANEL else Rutas.MIS_TICKETS
+        navController.navigate(destino) {
+            popUpTo(navController.graph.id) { inclusive = true }
+        }
+    }
 
     NavHost(navController = navController, startDestination = Rutas.SPLASH) {
 
         composable(Rutas.SPLASH) {
             SplashScreen(
                 onComenzar = {
-                    navController.navigate(Rutas.CATEGORIAS) {
-                        popUpTo(Rutas.SPLASH) { inclusive = true }
+                    val p = perfil
+                    // Si ya hay perfil guardado, salta el login
+                    if (p == Rol.CLIENTE.name || p == Rol.ADMIN.name) {
+                        irAInicio(p)
+                    } else {
+                        navController.navigate(Rutas.LOGIN) {
+                            popUpTo(Rutas.SPLASH) { inclusive = true }
+                        }
                     }
                 }
             )
         }
 
+        composable(Rutas.LOGIN) {
+            LoginScreen(vm = sesionVm, onLoginExitoso = { rol -> irAInicio(rol) })
+        }
+
+        // Temporales: se reemplazan en el Paso 7 y en el Paso 10
+        composable(Rutas.MIS_TICKETS) { Pendiente("Mis tickets ") }
+        composable(Rutas.PANEL) { Pendiente("Panel de soporte ") }
+
         composable(Rutas.CATEGORIAS) {
             val vm: CategoriasViewModel = viewModel(factory = factory)
             CategoriasScreen(vm = vm, onEditar = { /* TODO Paso 11 */ })
         }
+    }
+}
 
-        // TODO Paso 6: Login
-        // TODO Pasos 7-9: Estudiante
-        // TODO Pasos 10-11: Soporte
-        // TODO Paso 12: Perfil, Ajustes y cambio de perfil
+@Composable
+private fun Pendiente(texto: String) {
+    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Text(texto)
     }
 }

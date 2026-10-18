@@ -7,6 +7,7 @@ import androidx.activity.enableEdgeToEdge
 import com.tecsup.ayudacampus.ui.navigation.NavAyuda
 import com.tecsup.ayudacampus.ui.theme.AyudaTheme
 import com.tecsup.ayudacampus.viewmodel.AyudaViewModelFactory
+import com.tecsup.ayudacampus.data.prefs.PreferenciasStore
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -14,8 +15,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         val app = application as AyudaApp
-        val factory = AyudaViewModelFactory(app.repository)
-
+        val factory = AyudaViewModelFactory(app.repository, PreferenciasStore(applicationContext))
         setContent {
             AyudaTheme {
                 NavAyuda(factory)
