@@ -6,7 +6,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Sell
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -32,19 +35,30 @@ import com.tecsup.ayudacampus.ui.cliente.LoginScreen
 import com.tecsup.ayudacampus.ui.cliente.MisTicketsScreen
 import com.tecsup.ayudacampus.ui.cliente.NuevoTicketScreen
 import com.tecsup.ayudacampus.ui.cliente.SplashScreen
+import com.tecsup.ayudacampus.ui.soporte.BandejaScreen
 import com.tecsup.ayudacampus.ui.soporte.CategoriasScreen
+import com.tecsup.ayudacampus.ui.soporte.PanelScreen
+import com.tecsup.ayudacampus.ui.theme.AyudaTheme
 import com.tecsup.ayudacampus.viewmodel.AyudaViewModelFactory
+import com.tecsup.ayudacampus.viewmodel.BandejaViewModel
 import com.tecsup.ayudacampus.viewmodel.CategoriasViewModel
 import com.tecsup.ayudacampus.viewmodel.MisTicketsViewModel
 import com.tecsup.ayudacampus.viewmodel.NuevoTicketViewModel
+import com.tecsup.ayudacampus.viewmodel.PanelViewModel
 import com.tecsup.ayudacampus.viewmodel.SesionViewModel
 import com.tecsup.ayudacampus.viewmodel.TicketDetalleViewModel
 
-// Barra inferior del Estudiante
+// Barras inferiores: 3 items Estudiante, 4 items Soporte
 private val itemsEstudiante = listOf(
     Triple(Rutas.MIS_TICKETS, "Tickets", Icons.AutoMirrored.Filled.List),
     Triple(Rutas.NUEVO_TICKET, "Nuevo", Icons.Default.Add),
     Triple(Rutas.PERFIL, "Perfil", Icons.Default.Person)
+)
+private val itemsSoporte = listOf(
+    Triple(Rutas.PANEL, "Panel", Icons.Default.BarChart),
+    Triple(Rutas.BANDEJA, "Tickets", Icons.AutoMirrored.Filled.List),
+    Triple(Rutas.CATEGORIAS, "Categorías", Icons.Default.Sell),
+    Triple(Rutas.AJUSTES, "Ajustes", Icons.Default.Settings)
 )
 
 @Composable
@@ -52,6 +66,7 @@ fun NavAyuda(factory: AyudaViewModelFactory) {
     val navController = rememberNavController()
     val sesionVm: SesionViewModel = viewModel(factory = factory)
     val perfil by sesionVm.perfilActivo.collectAsState()
+    val esSoporte = perfil == Rol.ADMIN.name
 
     val entrada by navController.currentBackStackEntryAsState()
     val rutaActual = entrada?.destination?.route
@@ -65,92 +80,118 @@ fun NavAyuda(factory: AyudaViewModelFactory) {
     }
 
     fun irA(ruta: String) {
+        val inicio = if (esSoporte) Rutas.PANEL else Rutas.MIS_TICKETS
         navController.navigate(ruta) {
-            popUpTo(Rutas.MIS_TICKETS) { saveState = true }
+            popUpTo(inicio) { saveState = true }
             launchSingleTop = true
             restoreState = true
         }
     }
 
-    Scaffold(
-        bottomBar = {
-            if (rutaActual in itemsEstudiante.map { it.first } + Rutas.DETALLE_TICKET) {
-                NavigationBar(containerColor = MaterialTheme.colorScheme.surface) {
-                    itemsEstudiante.forEach { (ruta, texto, icono) ->
-                        NavigationBarItem(
-                            selected = rutaActual == ruta ||
-                                    (ruta == Rutas.MIS_TICKETS && rutaActual == Rutas.DETALLE_TICKET),
-                            onClick = { irA(ruta) },
-                            icon = { Icon(icono, contentDescription = texto) },
-                            label = { Text(texto) },
-                            colors = NavigationBarItemDefaults.colors(
-                                indicatorColor = MaterialTheme.colorScheme.primaryContainer
+    val barra = when (rutaActual) {
+        in itemsEstudiante.map { it.first } + Rutas.DETALLE_TICKET -> itemsEstudiante
+        in itemsSoporte.map { it.first } + Rutas.ATENDER_TICKET -> itemsSoporte
+        else -> null
+    }
+
+    AyudaTheme(rol = if (esSoporte) Rol.ADMIN else Rol.CLIENTE) {
+        Scaffold(
+            bottomBar = {
+                if (barra != null) {
+                    NavigationBar(containerColor = MaterialTheme.colorScheme.surface) {
+                        barra.forEach { (ruta, texto, icono) ->
+                            NavigationBarItem(
+                                selected = rutaActual == ruta ||
+                                        (ruta == Rutas.MIS_TICKETS && rutaActual == Rutas.DETALLE_TICKET) ||
+                                        (ruta == Rutas.BANDEJA && rutaActual == Rutas.ATENDER_TICKET),
+                                onClick = { irA(ruta) },
+                                icon = { Icon(icono, contentDescription = texto) },
+                                label = { Text(texto) },
+                                colors = NavigationBarItemDefaults.colors(
+                                    indicatorColor = MaterialTheme.colorScheme.primaryContainer
+                                )
                             )
-                        )
+                        }
                     }
                 }
             }
-        }
-    ) { padding ->
-        NavHost(
-            navController = navController,
-            startDestination = Rutas.SPLASH,
-            modifier = Modifier.padding(padding)
-        ) {
-            composable(Rutas.SPLASH) {
-                SplashScreen(
-                    onComenzar = {
-                        val p = perfil
-                        // Si ya hay perfil guardado, salta el login
-                        if (p == Rol.CLIENTE.name || p == Rol.ADMIN.name) {
-                            irAInicio(p)
-                        } else {
-                            navController.navigate(Rutas.LOGIN) {
-                                popUpTo(Rutas.SPLASH) { inclusive = true }
+        ) { padding ->
+            NavHost(
+                navController = navController,
+                startDestination = Rutas.SPLASH,
+                modifier = Modifier.padding(padding)
+            ) {
+                composable(Rutas.SPLASH) {
+                    SplashScreen(
+                        onComenzar = {
+                            val p = perfil
+                            // Si ya hay perfil guardado, salta el login
+                            if (p == Rol.CLIENTE.name || p == Rol.ADMIN.name) {
+                                irAInicio(p)
+                            } else {
+                                navController.navigate(Rutas.LOGIN) {
+                                    popUpTo(Rutas.SPLASH) { inclusive = true }
+                                }
                             }
                         }
-                    }
-                )
-            }
+                    )
+                }
 
-            composable(Rutas.LOGIN) {
-                LoginScreen(vm = sesionVm, onLoginExitoso = { rol -> irAInicio(rol) })
-            }
+                composable(Rutas.LOGIN) {
+                    LoginScreen(vm = sesionVm, onLoginExitoso = { rol -> irAInicio(rol) })
+                }
 
-            composable(Rutas.MIS_TICKETS) {
-                val vm: MisTicketsViewModel = viewModel(factory = factory)
-                MisTicketsScreen(
-                    vm = vm,
-                    onAbrirTicket = { id -> navController.navigate(Rutas.detalleTicket(id)) },
-                    onNuevo = { irA(Rutas.NUEVO_TICKET) }
-                )
-            }
+                // Estudiante
+                composable(Rutas.MIS_TICKETS) {
+                    val vm: MisTicketsViewModel = viewModel(factory = factory)
+                    MisTicketsScreen(
+                        vm = vm,
+                        onAbrirTicket = { id -> navController.navigate(Rutas.detalleTicket(id)) },
+                        onNuevo = { irA(Rutas.NUEVO_TICKET) }
+                    )
+                }
 
-            composable(Rutas.NUEVO_TICKET) {
-                val vm: NuevoTicketViewModel = viewModel(factory = factory)
-                NuevoTicketScreen(
-                    vm = vm,
-                    onVolver = { navController.popBackStack() },
-                    onEnviado = { navController.popBackStack(Rutas.MIS_TICKETS, inclusive = false) }
-                )
-            }
+                composable(Rutas.NUEVO_TICKET) {
+                    val vm: NuevoTicketViewModel = viewModel(factory = factory)
+                    NuevoTicketScreen(
+                        vm = vm,
+                        onVolver = { navController.popBackStack() },
+                        onEnviado = { navController.popBackStack(Rutas.MIS_TICKETS, inclusive = false) }
+                    )
+                }
 
-            composable(
-                Rutas.DETALLE_TICKET,
-                arguments = listOf(navArgument("ticketId") { type = NavType.IntType })
-            ) { entry ->
-                val id = entry.arguments?.getInt("ticketId") ?: 0
-                val vm: TicketDetalleViewModel = viewModel(factory = factory)
-                DetalleTicketScreen(vm = vm, ticketId = id, onVolver = { navController.popBackStack() })
-            }
+                composable(
+                    Rutas.DETALLE_TICKET,
+                    arguments = listOf(navArgument("ticketId") { type = NavType.IntType })
+                ) { entry ->
+                    val id = entry.arguments?.getInt("ticketId") ?: 0
+                    val vm: TicketDetalleViewModel = viewModel(factory = factory)
+                    DetalleTicketScreen(vm = vm, ticketId = id, onVolver = { navController.popBackStack() })
+                }
 
-            // Pantallas temporales
-            composable(Rutas.PERFIL) { Pendiente("Perfil") }
-            composable(Rutas.PANEL) { Pendiente("Panel de soporte") }
+                // Soporte
+                composable(Rutas.PANEL) {
+                    val vm: PanelViewModel = viewModel(factory = factory)
+                    PanelScreen(vm = vm, onVerAltas = { irA(Rutas.BANDEJA) })
+                }
 
-            composable(Rutas.CATEGORIAS) {
-                val vm: CategoriasViewModel = viewModel(factory = factory)
-                CategoriasScreen(vm = vm, onEditar = { })
+                composable(Rutas.BANDEJA) {
+                    val vm: BandejaViewModel = viewModel(factory = factory)
+                    BandejaScreen(
+                        vm = vm,
+                        onAbrirTicket = { id -> navController.navigate(Rutas.atenderTicket(id)) }
+                    )
+                }
+
+                composable(Rutas.CATEGORIAS) {
+                    val vm: CategoriasViewModel = viewModel(factory = factory)
+                    CategoriasScreen(vm = vm, onEditar = { })
+                }
+
+                // Pantallas temporales
+                composable(Rutas.ATENDER_TICKET) { Pendiente("Atender ticket") }
+                composable(Rutas.AJUSTES) { Pendiente("Ajustes") }
+                composable(Rutas.PERFIL) { Pendiente("Perfil") }
             }
         }
     }
