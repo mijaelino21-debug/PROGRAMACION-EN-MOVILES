@@ -81,8 +81,6 @@ DataStore (solo preferencias) ──► ViewModel
 
 <img width="340" height="716" alt="image" src="https://github.com/user-attachments/assets/9f4a7d1d-8122-4324-a8ae-2aaf42d6176e" />
 
-<img width="340" height="716" alt="image" src="https://github.com/user-attachments/assets/fe7dffa2-914f-448f-9a3f-115eeeec2eac" />
-
 
 
 ### Soporte TI
@@ -106,18 +104,18 @@ DataStore (solo preferencias) ──► ViewModel
 
 ## Para pensar
 
-## ¿Por qué las reglas de estado están en el ViewModel y no en el DAO ni en el Composable? | Son lógica de negocio: el DAO solo guarda datos y el Composable solo dibuja. 
+## ¿Por qué las reglas de estado están en el ViewModel y no en el DAO ni en el Composable? 
 
 Porque son lógica de negocio: el DAO solo guarda datos y el Composable solo muestra.
 
-## ¿Por qué `crearTicket` es suspend y `observarTicket` es Flow? | `crearTicket` escribe una vez; `observarTicket` avisa cada vez que el ticket cambia.
+## ¿Por qué `crearTicket` es suspend y `observarTicket` es Flow? 
 
-Crear se hace una sola vez; observar avisa cada vez que el ticket cambia.
+Ya que Crear se hace una sola vez y  observar avisa cada vez que el ticket cambia.
 
-## ¿Qué pasaría si un ticket pudiera cerrarse sin calificación? | No se sabría si el problema se resolvió ni cómo fue la atención. 
+## ¿Qué pasaría si un ticket pudiera cerrarse sin calificación? 
 
 No se sabría si el problema se resolvió ni cómo fue la atención.
 
-## ¿Qué debería cambiar si mañana los tickets viven en un servidor? | Solo la implementación de `AyudaRepository`; ViewModels y pantallas quedan igual. 
+## ¿Qué debería cambiar si mañana los tickets viven en un servidor? 
 
 Solo la implementación del Repository;  ya que las  pantallas en   ViewModels quedan igual.
