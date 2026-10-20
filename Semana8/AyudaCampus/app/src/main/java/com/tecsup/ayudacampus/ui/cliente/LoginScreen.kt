@@ -18,6 +18,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -36,7 +37,7 @@ import com.tecsup.ayudacampus.ui.theme.AyudaTheme
 import com.tecsup.ayudacampus.viewmodel.SesionViewModel
 
 @Composable
-fun LoginScreen(vm: SesionViewModel, onLoginExitoso: (String) -> Unit) {
+fun LoginScreen(vm: SesionViewModel, onLoginExitoso: (String) -> Unit, onIrRegistro: () -> Unit) {
     var rol by remember { mutableStateOf(Rol.CLIENTE) }
     var correo by remember { mutableStateOf("") }
     var clave by remember { mutableStateOf("") }
@@ -102,6 +103,11 @@ fun LoginScreen(vm: SesionViewModel, onLoginExitoso: (String) -> Unit) {
 
             Spacer(Modifier.height(24.dp))
             AyudaButton(texto = "Ingresar", onClick = { vm.login(correo, clave, rol) })
+
+            Spacer(Modifier.height(16.dp))
+            TextButton(onClick = onIrRegistro, modifier = Modifier.fillMaxWidth()) {
+                Text("¿No tienes cuenta? Regístrate aquí")
+            }
         }
     }
 }

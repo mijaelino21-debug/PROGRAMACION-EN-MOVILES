@@ -20,6 +20,7 @@ class AyudaViewModelFactory(
         modelClass.isAssignableFrom(PanelViewModel::class.java) -> PanelViewModel(repo) as T
         modelClass.isAssignableFrom(BandejaViewModel::class.java) -> BandejaViewModel(repo) as T
         modelClass.isAssignableFrom(AtenderViewModel::class.java) -> AtenderViewModel(repo, prefs) as T
+        modelClass.isAssignableFrom(RegistroViewModel::class.java) -> RegistroViewModel(repo) as T
         else -> throw IllegalArgumentException("ViewModel desconocido: ${modelClass.name}")
     }
 }

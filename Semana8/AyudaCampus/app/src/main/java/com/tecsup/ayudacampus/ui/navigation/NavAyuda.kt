@@ -48,6 +48,8 @@ import com.tecsup.ayudacampus.viewmodel.CategoriasViewModel
 import com.tecsup.ayudacampus.viewmodel.MisTicketsViewModel
 import com.tecsup.ayudacampus.viewmodel.NuevoTicketViewModel
 import com.tecsup.ayudacampus.viewmodel.PanelViewModel
+import com.tecsup.ayudacampus.viewmodel.RegistroViewModel
+import com.tecsup.ayudacampus.ui.cliente.RegistroScreen
 import com.tecsup.ayudacampus.viewmodel.SesionViewModel
 import com.tecsup.ayudacampus.viewmodel.TicketDetalleViewModel
 import androidx.compose.foundation.background
@@ -163,7 +165,19 @@ fun NavAyuda(factory: AyudaViewModelFactory) {
                 }
 
                 composable(Rutas.LOGIN) {
-                    LoginScreen(vm = sesionVm, onLoginExitoso = { rol -> irAInicio(rol) })
+                    LoginScreen(
+                        vm = sesionVm,
+                        onLoginExitoso = { rol -> irAInicio(rol) },
+                        onIrRegistro = { navController.navigate(Rutas.REGISTRO) }
+                    )
+                }
+
+                composable(Rutas.REGISTRO) {
+                    val vm: RegistroViewModel = viewModel(factory = factory)
+                    RegistroScreen(
+                        vm = vm,
+                        onVolverLogin = { navController.popBackStack() }
+                    )
                 }
 
                 // Estudiante
