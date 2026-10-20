@@ -140,13 +140,27 @@ fun AtenderTicketScreen(vm: AtenderViewModel, ticketId: Int, onVolver: () -> Uni
                     autor = c.autorNombre,
                     texto = c.texto,
                     hora = hora(c.fecha),
-                    propio = c.autorRol == Rol.ADMIN.name
+                    propio = c.autorRol == Rol.ADMIN.name,
+                    esInterno = c.esInterno
                 )
             }
             Spacer(Modifier.height(4.dp))
         }
 
         if (!cerrado) {
+            var esNotaInterna by remember { mutableStateOf(false) }
+
+            Row(
+                Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 2.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                FilterChip(
+                    selected = esNotaInterna,
+                    onClick = { esNotaInterna = !esNotaInterna },
+                    label = { Text(if (esNotaInterna) "🔒 Nota Interna (Privada)" else "💬 Respuesta Pública") }
+                )
+            }
+
             Row(
                 Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
@@ -154,16 +168,20 @@ fun AtenderTicketScreen(vm: AtenderViewModel, ticketId: Int, onVolver: () -> Uni
                 OutlinedTextField(
                     value = respuesta,
                     onValueChange = { respuesta = it },
-                    placeholder = { Text("Responder al cliente...") },
+                    placeholder = { Text(if (esNotaInterna) "Escribe nota interna..." else "Responder al cliente...") },
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(24.dp),
                     singleLine = true
                 )
                 IconButton(onClick = {
-                    vm.responder(respuesta)
+                    if (esNotaInterna) {
+                        vm.comentarInterno(respuesta)
+                    } else {
+                        vm.responder(respuesta)
+                    }
                     respuesta = ""
                 }) {
-                    Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Enviar", tint = MaterialTheme.colorScheme.primary)
+                    Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Enviar", tint = if (esNotaInterna) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.primary)
                 }
             }
             AyudaButton(

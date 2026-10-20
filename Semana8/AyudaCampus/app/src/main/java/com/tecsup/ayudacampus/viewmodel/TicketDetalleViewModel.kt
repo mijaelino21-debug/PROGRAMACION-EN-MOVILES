@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -19,9 +20,14 @@ class TicketDetalleViewModel(private val repo: AyudaRepository) : ViewModel() {
 
     private val ticketId = MutableStateFlow(0)
 
-    // Flow: si Soporte cambia algo, la pantalla se actualiza sola
+    // Flow: si Soporte cambia algo, la pantalla se actualiza sola (oculta notas internas al estudiante)
     val ticket: StateFlow<TicketConDetalle?> = ticketId
         .flatMapLatest { repo.observarTicket(it) }
+        .map { detalle ->
+            detalle?.let {
+                it.copy(comentarios = it.comentarios.filter { c -> !c.esInterno })
+            }
+        }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
     fun cargar(id: Int) { ticketId.value = id }

@@ -33,7 +33,7 @@ interface AyudaRepository {
     suspend fun cambiarPrioridad(ticketId: Int, prioridad: Prioridad)
     suspend fun cerrarConCalificacion(ticketId: Int, calificacion: Int)
     suspend fun reabrir(ticketId: Int)
-    suspend fun agregarComentario(ticketId: Int, autor: Usuario, texto: String)
+    suspend fun agregarComentario(ticketId: Int, autor: Usuario, texto: String, esInterno: Boolean = false)
 
     // Panel
     fun observarCantidadPorEstado(estado: EstadoTicket): Flow<Int>

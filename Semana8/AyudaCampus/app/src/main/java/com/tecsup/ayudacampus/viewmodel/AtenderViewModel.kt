@@ -65,7 +65,22 @@ class AtenderViewModel(
                 clave = "",
                 rol = Rol.ADMIN.name
             )
-            repo.agregarComentario(t.ticket.id, autor, texto.trim())
+            repo.agregarComentario(t.ticket.id, autor, texto.trim(), esInterno = false)
+        }
+    }
+
+    fun comentarInterno(texto: String) {
+        val t = ticket.value ?: return
+        if (texto.isBlank() || estaCerrado()) return
+        viewModelScope.launch {
+            val autor = Usuario(
+                id = prefs.usuarioId.first(),
+                nombre = "Soporte TI",
+                correo = "",
+                clave = "",
+                rol = Rol.ADMIN.name
+            )
+            repo.agregarComentario(t.ticket.id, autor, texto.trim(), esInterno = true)
         }
     }
 

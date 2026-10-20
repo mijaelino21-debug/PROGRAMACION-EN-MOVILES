@@ -20,10 +20,11 @@ fun BurbujaComentario(
     texto: String,
     hora: String,
     propio: Boolean,
+    esInterno: Boolean = false,
     modifier: Modifier = Modifier
 ) {
-    val fondo = if (propio) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primaryContainer
-    val contenido = if (propio) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onPrimaryContainer
+    val fondo = if (esInterno) MaterialTheme.colorScheme.tertiaryContainer else if (propio) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primaryContainer
+    val contenido = if (esInterno) MaterialTheme.colorScheme.onTertiaryContainer else if (propio) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onPrimaryContainer
 
     Row(
         modifier = modifier.fillMaxWidth(),
@@ -35,6 +36,14 @@ fun BurbujaComentario(
             modifier = Modifier.widthIn(max = 280.dp)
         ) {
             Column(modifier = Modifier.padding(10.dp)) {
+                if (esInterno) {
+                    Text(
+                        text = "🔒 Nota interna (Oculta al estudiante)",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = contenido,
+                        modifier = Modifier.padding(bottom = 2.dp)
+                    )
+                }
                 Text(
                     text = "$autor · $hora",
                     style = MaterialTheme.typography.labelSmall,

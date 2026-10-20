@@ -20,6 +20,9 @@ interface TicketDao {
     @Insert
     suspend fun insertarComentario(c: Comentario)
 
+    @Query("SELECT * FROM comentarios WHERE ticketId = :ticketId")
+    suspend fun obtenerComentariosDeTicket(ticketId: Int): List<Comentario>
+
     @Query("UPDATE tickets SET estado = :estado WHERE id = :id")
     suspend fun actualizarEstado(id: Int, estado: String)
 

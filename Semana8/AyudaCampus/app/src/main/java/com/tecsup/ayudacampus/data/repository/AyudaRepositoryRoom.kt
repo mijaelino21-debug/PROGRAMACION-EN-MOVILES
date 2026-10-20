@@ -78,14 +78,15 @@ class AyudaRepositoryRoom(
         ticketDao.reabrir(ticketId)
     }
 
-    override suspend fun agregarComentario(ticketId: Int, autor: Usuario, texto: String) {
+    override suspend fun agregarComentario(ticketId: Int, autor: Usuario, texto: String, esInterno: Boolean) {
         ticketDao.insertarComentario(
             Comentario(
                 ticketId = ticketId,
                 autorId = autor.id,
                 autorNombre = autor.nombre,
                 autorRol = autor.rol,
-                texto = texto
+                texto = texto,
+                esInterno = esInterno
             )
         )
     }

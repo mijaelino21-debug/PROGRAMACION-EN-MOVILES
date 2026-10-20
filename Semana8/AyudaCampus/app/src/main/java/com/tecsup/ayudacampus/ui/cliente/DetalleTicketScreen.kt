@@ -134,7 +134,8 @@ fun DetalleTicketScreen(vm: TicketDetalleViewModel, ticketId: Int, onVolver: () 
                     autor = c.autorNombre,
                     texto = c.texto,
                     hora = hora(c.fecha),
-                    propio = c.autorRol == Rol.CLIENTE.name
+                    propio = c.autorRol == Rol.CLIENTE.name,
+                    esInterno = c.esInterno
                 )
             }
 
