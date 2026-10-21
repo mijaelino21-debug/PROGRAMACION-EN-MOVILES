@@ -1,5 +1,10 @@
 package com.tecsup.ayudacampus.ui.navigation
 
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -120,6 +125,11 @@ fun NavAyuda(factory: AyudaViewModelFactory) {
         else -> null
     }
 
+    val defaultEnter = { fadeIn(animationSpec = tween(300)) + slideInHorizontally(initialOffsetX = { 200 }, animationSpec = tween(300)) }
+    val defaultExit = { fadeOut(animationSpec = tween(300)) + slideOutHorizontally(targetOffsetX = { -200 }, animationSpec = tween(300)) }
+    val defaultPopEnter = { fadeIn(animationSpec = tween(300)) + slideInHorizontally(initialOffsetX = { -200 }, animationSpec = tween(300)) }
+    val defaultPopExit = { fadeOut(animationSpec = tween(300)) + slideOutHorizontally(targetOffsetX = { 200 }, animationSpec = tween(300)) }
+
     AyudaTheme(rol = if (esSoporte) Rol.ADMIN else Rol.CLIENTE, modoOscuro = modoOscuro) {
         Scaffold(
             bottomBar = {
@@ -146,7 +156,11 @@ fun NavAyuda(factory: AyudaViewModelFactory) {
             NavHost(
                 navController = navController,
                 startDestination = Rutas.SPLASH,
-                modifier = Modifier.padding(padding)
+                modifier = Modifier.padding(padding),
+                enterTransition = { defaultEnter() },
+                exitTransition = { defaultExit() },
+                popEnterTransition = { defaultPopEnter() },
+                popExitTransition = { defaultPopExit() }
             ) {
                 composable(Rutas.SPLASH) {
                     SplashScreen(

@@ -19,6 +19,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Sell
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.FloatingActionButton
@@ -35,6 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.tecsup.ayudacampus.data.local.entity.Categoria
+import com.tecsup.ayudacampus.ui.components.EmptyState
 import com.tecsup.ayudacampus.ui.components.iconoDeCategoria
 import com.tecsup.ayudacampus.viewmodel.CategoriasViewModel
 
@@ -47,12 +49,20 @@ fun CategoriasScreen(vm: CategoriasViewModel, onEditar: (Int) -> Unit, onNueva: 
         Column(Modifier.fillMaxSize().padding(16.dp)) {
             Text("Categorías", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
             Spacer(Modifier.height(8.dp))
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-                contentPadding = PaddingValues(bottom = 80.dp)
-            ) {
-                items(categorias, key = { it.id }) { c ->
-                    CategoriaItem(c, onToggle = { vm.alternar(c) }, onEditar = { onEditar(c.id) })
+            if (categorias.isEmpty()) {
+                EmptyState(
+                    icono = Icons.Default.Sell,
+                    titulo = "No hay categorías",
+                    subtitulo = "Crea una nueva categoría usando el botón inferior."
+                )
+            } else {
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                    contentPadding = PaddingValues(bottom = 80.dp)
+                ) {
+                    items(categorias, key = { it.id }) { c ->
+                        CategoriaItem(c, onToggle = { vm.alternar(c) }, onEditar = { onEditar(c.id) })
+                    }
                 }
             }
         }

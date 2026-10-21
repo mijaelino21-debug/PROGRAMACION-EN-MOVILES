@@ -2,7 +2,6 @@ package com.tecsup.ayudacampus.ui.soporte
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -14,6 +13,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Inbox
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import com.tecsup.ayudacampus.model.EstadoTicket
 import com.tecsup.ayudacampus.model.Prioridad
 import com.tecsup.ayudacampus.ui.components.AyudaTextField
+import com.tecsup.ayudacampus.ui.components.EmptyState
 import com.tecsup.ayudacampus.ui.components.TicketCard
 import com.tecsup.ayudacampus.viewmodel.BandejaViewModel
 
@@ -155,12 +156,11 @@ fun BandejaScreen(vm: BandejaViewModel, onAbrirTicket: (Int) -> Unit) {
         Spacer(Modifier.height(8.dp))
 
         if (tickets.isEmpty()) {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text(
-                    text = if (hayFiltrosActivos) "No hay tickets con los filtros seleccionados" else "No hay tickets aquí",
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
+            EmptyState(
+                icono = if (hayFiltrosActivos) Icons.Default.Search else Icons.Default.Inbox,
+                titulo = if (hayFiltrosActivos) "No hay tickets con los filtros seleccionados" else "No hay tickets aquí",
+                subtitulo = if (hayFiltrosActivos) "Prueba cambiando o limpiando los filtros de búsqueda." else "La bandeja de soporte está al día."
+            )
         } else {
             LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 items(tickets, key = { it.ticket.id }) { t ->

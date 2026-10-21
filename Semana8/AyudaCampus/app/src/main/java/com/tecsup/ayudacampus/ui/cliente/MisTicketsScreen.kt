@@ -14,6 +14,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Inbox
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
@@ -30,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import com.tecsup.ayudacampus.model.EstadoTicket
 import com.tecsup.ayudacampus.model.Prioridad
 import com.tecsup.ayudacampus.ui.components.AyudaTextField
+import com.tecsup.ayudacampus.ui.components.EmptyState
 import com.tecsup.ayudacampus.ui.components.TicketCard
 import com.tecsup.ayudacampus.viewmodel.MisTicketsViewModel
 import androidx.compose.material3.FilterChipDefaults
@@ -84,9 +86,12 @@ fun MisTicketsScreen(
             Spacer(Modifier.height(8.dp))
 
             if (tickets.isEmpty()) {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("No tienes tickets aquí", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
+                val hayFiltro = busqueda.isNotBlank() || filtro != null
+                EmptyState(
+                    icono = if (hayFiltro) Icons.Default.Search else Icons.Default.Inbox,
+                    titulo = if (hayFiltro) "Sin resultados" else "No tienes tickets aquí",
+                    subtitulo = if (hayFiltro) "Intenta con otros términos de búsqueda o filtros." else "Crea un nuevo ticket con el botón inferior para empezar."
+                )
             } else {
                 LazyColumn(
                     verticalArrangement = Arrangement.spacedBy(10.dp),
