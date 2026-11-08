@@ -1,4 +1,4 @@
-package com.tecsup.catalogo.data.remote.dto
+package com.tecsup.catalogo.data.dto
 
 import kotlinx.serialization.Serializable
 
