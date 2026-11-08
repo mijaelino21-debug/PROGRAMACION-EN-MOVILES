@@ -15,7 +15,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModel
@@ -33,6 +32,8 @@ import com.tecsup.catalogo.ui.detalle.DetalleScreen
 import com.tecsup.catalogo.ui.detalle.DetalleViewModel
 import com.tecsup.catalogo.ui.lista.ListaScreen
 import com.tecsup.catalogo.ui.lista.ListaViewModel
+import androidx.compose.runtime.saveable.rememberSaveable
+
 
 class MainActivity : ComponentActivity() {
 
@@ -76,11 +77,9 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    var isLoggedIn by remember {
-                        mutableStateOf(authViewModel.isUserLoggedIn)
-                    }
-                    var verAdminDirecto by remember { mutableStateOf(false) }
-                    var hotelDetalleId by remember { mutableStateOf<Int?>(null) }
+                    var isLoggedIn by rememberSaveable { mutableStateOf(authViewModel.isUserLoggedIn) }
+                    var verAdminDirecto by rememberSaveable { mutableStateOf(false) }
+                    var hotelDetalleId by rememberSaveable { mutableStateOf<Int?>(null) }
 
                     val isAdmin by adminViewModel.isAdmin.collectAsState()
 
