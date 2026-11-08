@@ -1,4 +1,4 @@
-package com.tecsup.catalogo.domain.repository
+package com.tecsup.catalogo.repository
 
 import com.tecsup.catalogo.domain.model.Hotel
 
