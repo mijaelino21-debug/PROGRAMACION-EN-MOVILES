@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun AdminScreen(
     viewModel: AdminViewModel,
+    userEmail: String,
     onVolverAlCatalogo: () -> Unit,
     onCerrarSesion: () -> Unit
 ) {
@@ -74,12 +75,11 @@ fun AdminScreen(
             )
 
             Text(
-                text = "Sesión activa: ${viewModel.userEmail}",
+                text = "Sesión activa: $userEmail",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
-            // Totales
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)

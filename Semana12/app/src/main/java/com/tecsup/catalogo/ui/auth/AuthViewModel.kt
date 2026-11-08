@@ -1,10 +1,13 @@
 package com.tecsup.catalogo.ui.auth
 
 import androidx.lifecycle.ViewModel
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
+import androidx.lifecycle.viewModelScope
+import com.tecsup.catalogo.data.auth.AuthRepository
+import com.tecsup.catalogo.domain.model.Sesion
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
 sealed interface AuthUiState {
     object Idle : AuthUiState
@@ -14,15 +17,26 @@ sealed interface AuthUiState {
 }
 
 class AuthViewModel(
-    private val auth: FirebaseAuth = FirebaseAuth.getInstance(),
-    private val db: FirebaseFirestore = FirebaseFirestore.getInstance()
+    private val repo: AuthRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<AuthUiState>(AuthUiState.Idle)
-    val uiState: StateFlow<AuthUiState> = _uiState
+    val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
 
-    val isUserLoggedIn: Boolean
-        get() = auth.currentUser != null
+    // null = no hay sesión iniciada
+    private val _sesion = MutableStateFlow<Sesion?>(null)
+    val sesion: StateFlow<Sesion?> = _sesion.asStateFlow()
+
+    // false mientras se comprueba si ya había una sesión guardada
+    private val _sesionLista = MutableStateFlow(false)
+    val sesionLista: StateFlow<Boolean> = _sesionLista.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            _sesion.value = repo.sesionActual()
+            _sesionLista.value = true
+        }
+    }
 
     fun login(email: String, pass: String) {
         if (email.isBlank() || pass.isBlank()) {
@@ -30,13 +44,16 @@ class AuthViewModel(
             return
         }
         _uiState.value = AuthUiState.Loading
-        auth.signInWithEmailAndPassword(email.trim(), pass.trim())
-            .addOnSuccessListener {
-                _uiState.value = AuthUiState.Success
-            }
-            .addOnFailureListener { e ->
-                _uiState.value = AuthUiState.Error(e.localizedMessage ?: "Error al iniciar sesión")
-            }
+        viewModelScope.launch {
+            repo.iniciarSesion(email.trim(), pass.trim())
+                .onSuccess {
+                    _sesion.value = it
+                    _uiState.value = AuthUiState.Success
+                }
+                .onFailure { e ->
+                    _uiState.value = AuthUiState.Error(e.localizedMessage ?: "Error al iniciar sesión")
+                }
+        }
     }
 
     fun registrar(email: String, pass: String) {
@@ -45,33 +62,21 @@ class AuthViewModel(
             return
         }
         _uiState.value = AuthUiState.Loading
-        auth.createUserWithEmailAndPassword(email.trim(), pass.trim())
-            .addOnSuccessListener { result ->
-                val uid = result.user?.uid
-                if (uid == null) {
-                    _uiState.value = AuthUiState.Error("No se pudo obtener el usuario")
-                    return@addOnSuccessListener
+        viewModelScope.launch {
+            repo.registrar(email.trim(), pass.trim())
+                .onSuccess {
+                    _sesion.value = it
+                    _uiState.value = AuthUiState.Success
                 }
-                // Todo usuario nuevo nace con rol "usuario"
-                val datos = mapOf(
-                    "rol" to "usuario",
-                    "nombre" to email.trim().substringBefore("@")
-                )
-                db.collection("usuarios").document(uid).set(datos)
-                    .addOnSuccessListener { _uiState.value = AuthUiState.Success }
-                    .addOnFailureListener { e ->
-                        _uiState.value = AuthUiState.Error(
-                            e.localizedMessage ?: "Error al guardar el perfil"
-                        )
-                    }
-            }
-            .addOnFailureListener { e ->
-                _uiState.value = AuthUiState.Error(e.localizedMessage ?: "Error al registrarse")
-            }
+                .onFailure { e ->
+                    _uiState.value = AuthUiState.Error(e.localizedMessage ?: "Error al registrarse")
+                }
+        }
     }
 
     fun logout() {
-        auth.signOut()
+        repo.cerrarSesion()
+        _sesion.value = null
         _uiState.value = AuthUiState.Idle
     }
 

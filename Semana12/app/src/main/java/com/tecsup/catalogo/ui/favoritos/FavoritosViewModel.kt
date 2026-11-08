@@ -14,7 +14,7 @@ class FavoritosViewModel(
 ) : ViewModel() {
 
     // Escucha automáticamente los cambios de Room en tiempo real
-    val favoritos: StateFlow<List<Hotel>> = repository.obtenerFavoritos()
+    val favoritos: StateFlow<List<Hotel>> = repository.favoritos
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),

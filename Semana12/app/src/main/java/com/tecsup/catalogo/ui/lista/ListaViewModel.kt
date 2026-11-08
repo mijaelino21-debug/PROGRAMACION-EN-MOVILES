@@ -33,7 +33,7 @@ class ListaViewModel(
     init {
         // La lista SIEMPRE sale de Room. Retrofit solo la actualiza.
         viewModelScope.launch {
-            repository.obtenerHoteles().collect { lista ->
+            repository.items.collect { lista ->
                 todosLosHoteles = lista
                 // No mostramos "vacío" antes de que termine el primer refresco
                 if (lista.isNotEmpty() || refrescoTerminado) publicar()
@@ -44,7 +44,7 @@ class ListaViewModel(
 
     fun refrescar() {
         viewModelScope.launch {
-            val resultado = repository.refrescarHoteles()
+            val resultado = repository.refrescar()
             refrescoTerminado = true
             resultado
                 .onSuccess { cantidad ->
@@ -53,7 +53,7 @@ class ListaViewModel(
                     notificador.mostrar("Datos actualizados", "Se guardaron $cantidad elementos")
                 }
                 .onFailure { error ->
-                    val (totalGuardado, _) = repository.obtenerEstadisticas()
+                    val totalGuardado = repository.cantidadGuardada()
                     if (totalGuardado == 0) {
                         _estado.value = UiState.Error(mensajeDe(error))
                     } else {
