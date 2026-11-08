@@ -27,14 +27,26 @@ import com.tecsup.catalogo.ui.detalle.DetalleScreen
 import com.tecsup.catalogo.ui.detalle.DetalleViewModel
 import com.tecsup.catalogo.ui.lista.ListaScreen
 import com.tecsup.catalogo.ui.lista.ListaViewModel
+import android.Manifest
+import android.os.Build
+import androidx.activity.result.contract.ActivityResultContracts
+import com.tecsup.catalogo.notification.NotificadorAndroid
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 
 class MainActivity : ComponentActivity() {
 
     private val authViewModel: AuthViewModel by viewModels()
     private val adminViewModel: AdminViewModel by viewModels()
+    // Si el usuario niega el permiso, la app funciona normal pero sin avisos
+    private val pedirPermisoNotificaciones =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            pedirPermisoNotificaciones.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
 
         val context = applicationContext
         val database = AppDatabase.obtenerBaseDatos(context)
@@ -44,11 +56,14 @@ class MainActivity : ComponentActivity() {
         val factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                return ListaViewModel(application, repository) as T
+                return ListaViewModel(repository, NotificadorAndroid(context)) as T
             }
         }
 
         val listaViewModel = ViewModelProvider(this, factory)[ListaViewModel::class.java]
+
+
+
 
         setContent {
             MaterialTheme {
@@ -61,6 +76,13 @@ class MainActivity : ComponentActivity() {
                     }
                     var verAdminDirecto by remember { mutableStateOf(false) }
                     var hotelDetalleId by remember { mutableStateOf<Int?>(null) }
+
+                    val isAdmin by adminViewModel.isAdmin.collectAsState()
+
+                    LaunchedEffect(isLoggedIn) {
+                        if (isLoggedIn) adminViewModel.cargarRol() else adminViewModel.limpiarRol()
+                    }
+
 
                     if (isLoggedIn) {
                         val detalleId = hotelDetalleId
@@ -82,7 +104,7 @@ class MainActivity : ComponentActivity() {
                                 viewModel = detalleViewModel,
                                 onVolver = { hotelDetalleId = null }
                             )
-                        } else if (adminViewModel.isAdmin && verAdminDirecto) {
+                        } else if (isAdmin && verAdminDirecto) {
                             AdminScreen(
                                 viewModel = adminViewModel,
                                 onVolverAlCatalogo = { verAdminDirecto = false },
@@ -96,7 +118,7 @@ class MainActivity : ComponentActivity() {
                             ListaScreen(
                                 viewModel = listaViewModel,
                                 userEmail = adminViewModel.userEmail,
-                                isAdmin = adminViewModel.isAdmin,
+                                isAdmin = isAdmin,
                                 onHotelClick = { hotelDetalleId = it },
                                 onIrAlAdmin = { verAdminDirecto = true },
                                 onCerrarSesion = {
