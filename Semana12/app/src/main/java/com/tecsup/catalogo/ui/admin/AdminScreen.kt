@@ -3,11 +3,12 @@ package com.tecsup.catalogo.ui.admin
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AdminPanelSettings
+import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.ExitToApp
+import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -20,7 +21,22 @@ fun AdminScreen(
     onVolverAlCatalogo: () -> Unit,
     onCerrarSesion: () -> Unit
 ) {
+    val estadisticas by viewModel.estadisticas.collectAsState()
+    val sincronizando by viewModel.sincronizando.collectAsState()
+    val mensaje by viewModel.mensaje.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(Unit) { viewModel.cargarEstadisticas() }
+
+    LaunchedEffect(mensaje) {
+        mensaje?.let {
+            snackbarHostState.showSnackbar(it)
+            viewModel.mensajeMostrado()
+        }
+    }
+
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = { Text("Panel de Administración") },
@@ -63,7 +79,14 @@ fun AdminScreen(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            // Totales
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                TarjetaTotal("Hoteles guardados", estadisticas.totalGuardado, Modifier.weight(1f))
+                TarjetaTotal("Favoritos", estadisticas.totalFavoritos, Modifier.weight(1f))
+            }
 
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -74,19 +97,30 @@ fun AdminScreen(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     Text(
-                        text = "Acciones Rápidas",
+                        text = "Acciones",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
 
                     Button(
-                        onClick = { /* Próxima funcionalidad */ },
+                        onClick = viewModel::sincronizar,
+                        enabled = !sincronizando,
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(10.dp)
                     ) {
-                        Icon(Icons.Default.Add, contentDescription = null)
+                        Icon(Icons.Default.Sync, contentDescription = null)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Agregar Nuevo Hotel")
+                        Text(if (sincronizando) "Sincronizando..." else "Sincronizar")
+                    }
+
+                    OutlinedButton(
+                        onClick = viewModel::limpiarCache,
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(10.dp)
+                    ) {
+                        Icon(Icons.Default.DeleteSweep, contentDescription = null)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Limpiar caché")
                     }
 
                     OutlinedButton(
@@ -98,6 +132,25 @@ fun AdminScreen(
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun TarjetaTotal(titulo: String, valor: Int, modifier: Modifier = Modifier) {
+    Card(modifier = modifier, shape = RoundedCornerShape(16.dp)) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = valor.toString(),
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold
+            )
+            Text(text = titulo, style = MaterialTheme.typography.bodySmall)
         }
     }
 }
