@@ -10,18 +10,15 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-sealed interface ListaUiState {
-    object Loading : ListaUiState
-    data class Success(val hoteles: List<Hotel>) : ListaUiState
-    data class Error(val message: String) : ListaUiState
-}
-
 class ListaViewModel(
     private val repository: HotelRepository = HotelRepositoryImpl()
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow<ListaUiState>(ListaUiState.Loading)
-    val uiState: StateFlow<ListaUiState> = _uiState.asStateFlow()
+    private val _hoteles = MutableStateFlow<List<Hotel>>(emptyList())
+    val hoteles: StateFlow<List<Hotel>> = _hoteles.asStateFlow()
+
+    private val _cargando = MutableStateFlow(true)
+    val cargando: StateFlow<Boolean> = _cargando.asStateFlow()
 
     init {
         cargarHoteles()
@@ -29,20 +26,16 @@ class ListaViewModel(
 
     fun cargarHoteles() {
         viewModelScope.launch {
-            _uiState.value = ListaUiState.Loading
-            try {
-                val lista = repository.getHoteles()
-                _uiState.value = ListaUiState.Success(lista)
-            } catch (e: Exception) {
-                _uiState.value = ListaUiState.Error("Error al cargar hoteles")
-            }
+            _cargando.value = true
+            _hoteles.value = repository.getHoteles()
+            _cargando.value = false
         }
     }
 
     fun toggleFavorito(id: Int) {
         viewModelScope.launch {
             repository.toggleFavorito(id)
-            cargarHoteles()
+            _hoteles.value = repository.getHoteles()
         }
     }
 }
