@@ -29,6 +29,7 @@ import com.tecsup.catalogo.ui.detalle.DetalleScreen
 import com.tecsup.catalogo.ui.detalle.DetalleViewModel
 import com.tecsup.catalogo.ui.lista.ListaScreen
 import com.tecsup.catalogo.ui.lista.ListaViewModel
+import com.tecsup.catalogo.ui.theme.CatalogoTheme
 
 class MainActivity : ComponentActivity() {
 
@@ -50,7 +51,7 @@ class MainActivity : ComponentActivity() {
         val adminViewModel = ViewModelProvider(this, factory)[AdminViewModel::class.java]
 
         setContent {
-            MaterialTheme {
+            CatalogoTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
