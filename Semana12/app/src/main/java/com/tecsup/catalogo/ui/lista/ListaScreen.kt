@@ -16,6 +16,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.tecsup.catalogo.ui.UiState
+import com.tecsup.catalogo.ui.components.AvisoSinConexion
+import com.tecsup.catalogo.ui.components.Cargando
+import com.tecsup.catalogo.ui.components.ErrorView
 import com.tecsup.catalogo.ui.perfil.PerfilScreen
 
 enum class PestanaActual { EXPLORAR, FAVORITOS, PERFIL }
@@ -30,7 +34,8 @@ fun ListaScreen(
     onIrAlAdmin: () -> Unit,
     onCerrarSesion: () -> Unit
 ) {
-    val hoteles by viewModel.hoteles.collectAsState()
+    val estado by viewModel.estado.collectAsState()
+    val aviso by viewModel.aviso.collectAsState()
     val soloFavoritos by viewModel.soloFavoritos.collectAsState()
 
     var pestanaActual by remember { mutableStateOf(PestanaActual.EXPLORAR) }
@@ -93,28 +98,44 @@ fun ListaScreen(
                     )
                 }
                 else -> {
-                    if (hoteles.isEmpty()) {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = if (soloFavoritos) "No tienes hoteles agregados a favoritos" else "Cargando hoteles...",
-                                style = MaterialTheme.typography.bodyLarge
+                    Column(modifier = Modifier.fillMaxSize()) {
+                        // Aviso rojo cuando no hay internet y se muestran datos guardados
+                        AvisoSinConexion(hayConexion = aviso == null)
+
+                        when (val e = estado) {
+                            UiState.Cargando -> Cargando()
+
+                            is UiState.Error -> ErrorView(
+                                mensaje = e.mensaje,
+                                onReintentar = viewModel::reintentar
                             )
-                        }
-                    } else {
-                        LazyColumn(
-                            modifier = Modifier.fillMaxSize(),
-                            contentPadding = PaddingValues(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(16.dp)
-                        ) {
-                            items(hoteles, key = { it.id }) { hotel ->
-                                ItemHotel(
-                                    hotel = hotel,
-                                    onFavoritoClick = { viewModel.onFavoritoClicked(hotel.id) },
-                                    onClick = { onHotelClick(hotel.id) }
-                                )
+
+                            is UiState.Exito -> {
+                                if (e.datos.isEmpty()) {
+                                    Box(
+                                        modifier = Modifier.fillMaxSize(),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            text = if (soloFavoritos) "No tienes hoteles agregados a favoritos" else "No hay hoteles disponibles",
+                                            style = MaterialTheme.typography.bodyLarge
+                                        )
+                                    }
+                                } else {
+                                    LazyColumn(
+                                        modifier = Modifier.fillMaxSize(),
+                                        contentPadding = PaddingValues(16.dp),
+                                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                                    ) {
+                                        items(e.datos, key = { it.id }) { hotel ->
+                                            ItemHotel(
+                                                hotel = hotel,
+                                                onFavoritoClick = { viewModel.onFavoritoClicked(hotel.id) },
+                                                onClick = { onHotelClick(hotel.id) }
+                                            )
+                                        }
+                                    }
+                                }
                             }
                         }
                     }

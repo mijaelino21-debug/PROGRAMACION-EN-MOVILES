@@ -1,71 +1,88 @@
 package com.tecsup.catalogo.ui.lista
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.tecsup.catalogo.data.repository.HotelRepository
 import com.tecsup.catalogo.domain.model.Hotel
-import com.tecsup.catalogo.data.repository.HotelRepositoryImpl
-import com.tecsup.catalogo.util.NotificationHelper
+import com.tecsup.catalogo.notification.Notificador
+import com.tecsup.catalogo.ui.UiState
+import com.tecsup.catalogo.ui.mensajeDe
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class ListaViewModel(
-    application: Application,
-    private val repository: HotelRepositoryImpl
-) : AndroidViewModel(application) {
+    private val repository: HotelRepository,
+    private val notificador: Notificador
+) : ViewModel() {
 
-    private val notificationHelper = NotificationHelper(application)
+    private val _estado = MutableStateFlow<UiState<List<Hotel>>>(UiState.Cargando)
+    val estado: StateFlow<UiState<List<Hotel>>> = _estado.asStateFlow()
 
-    private val _hoteles = MutableStateFlow<List<Hotel>>(emptyList())
-    val hoteles: StateFlow<List<Hotel>> = _hoteles
+    // Aviso de "sin conexión" (null = todo bien)
+    private val _aviso = MutableStateFlow<String?>(null)
+    val aviso: StateFlow<String?> = _aviso.asStateFlow()
 
     private val _soloFavoritos = MutableStateFlow(false)
-    val soloFavoritos: StateFlow<Boolean> = _soloFavoritos
+    val soloFavoritos: StateFlow<Boolean> = _soloFavoritos.asStateFlow()
 
     private var todosLosHoteles: List<Hotel> = emptyList()
+    private var refrescoTerminado = false
 
     init {
-        cargarHoteles()
-    }
-
-    fun cargarHoteles() {
+        // La lista SIEMPRE sale de Room. Retrofit solo la actualiza.
         viewModelScope.launch {
-            try {
-                // Sincroniza datos remotos con la base de datos local
-                repository.refrescarHoteles()
-
-                // Escucha el Flow continuo de la base de datos local
-                repository.obtenerHoteles().collect { lista ->
-                    todosLosHoteles = lista
-                    aplicarFiltro(lista)
-
-                    if (lista.isNotEmpty()) {
-                        notificationHelper.mostrarNotificacionSincronizacion(lista.size)
-                    }
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
+            repository.obtenerHoteles().collect { lista ->
+                todosLosHoteles = lista
+                // No mostramos "vacío" antes de que termine el primer refresco
+                if (lista.isNotEmpty() || refrescoTerminado) publicar()
             }
         }
+        refrescar()
     }
 
-    private fun aplicarFiltro(lista: List<Hotel>) {
-        if (_soloFavoritos.value) {
-            _hoteles.value = lista.filter { it.esFavorito }
-        } else {
-            _hoteles.value = lista
+    fun refrescar() {
+        viewModelScope.launch {
+            val resultado = repository.refrescarHoteles()
+            refrescoTerminado = true
+            resultado
+                .onSuccess { cantidad ->
+                    _aviso.value = null
+                    if (cantidad == 0) publicar()
+                    notificador.mostrar("Datos actualizados", "Se guardaron $cantidad elementos")
+                }
+                .onFailure { error ->
+                    val (totalGuardado, _) = repository.obtenerEstadisticas()
+                    if (totalGuardado == 0) {
+                        _estado.value = UiState.Error(mensajeDe(error))
+                    } else {
+                        _aviso.value = "Sin conexión: mostrando datos guardados"
+                        publicar()
+                    }
+                }
         }
+    }
+
+    fun reintentar() {
+        _estado.value = UiState.Cargando
+        refrescoTerminado = false
+        refrescar()
+    }
+
+    private fun publicar() {
+        _estado.value = UiState.Exito(
+            if (_soloFavoritos.value) todosLosHoteles.filter { it.esFavorito } else todosLosHoteles
+        )
     }
 
     fun toggleFiltroFavoritos() {
         _soloFavoritos.value = !_soloFavoritos.value
-        aplicarFiltro(todosLosHoteles)
+        if (_estado.value is UiState.Exito) publicar()
     }
 
     fun onFavoritoClicked(hotelId: Int) {
         viewModelScope.launch {
-            // Llama a alternarFavorito tal como está definido en tu repositorio
             repository.alternarFavorito(hotelId)
         }
     }

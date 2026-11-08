@@ -41,19 +41,22 @@ class HotelRepositoryImpl(
         }
     }
 
-    override suspend fun refrescarHoteles() {
-        try {
+    override suspend fun refrescarHoteles(): Result<Int> {
+        return try {
             val remotos: List<HotelDto> = apiService.getHoteles()
+            // Los favoritos se leen ANTES de guardar para no perderlos al sincronizar
             val idsFavs = hotelDao.idsFavoritos().toSet()
 
             val entidades = remotos.map { dto ->
                 val idInt = dto.id?.toIntOrNull() ?: 0
-                val esFav = idInt in idsFavs
-                dto.toEntity(esFavorito = esFav)
+                dto.toEntity(esFavorito = idInt in idsFavs)
             }
             hotelDao.guardarTodos(entidades)
+            Result.success(entidades.size)
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
-            e.printStackTrace()
+            Result.failure(e)
         }
     }
 
