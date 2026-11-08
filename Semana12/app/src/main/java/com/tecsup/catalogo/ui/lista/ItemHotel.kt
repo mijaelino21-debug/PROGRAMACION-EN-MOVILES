@@ -1,12 +1,14 @@
 package com.tecsup.catalogo.ui.lista
 
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.*
@@ -15,12 +17,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.tecsup.catalogo.domain.model.Hotel
 
@@ -31,75 +32,83 @@ fun ItemHotel(
     modifier: Modifier = Modifier,
     onClick: () -> Unit = {}
 ) {
-    // Animación suave al marcar/desmarcar el corazón
+    // Animaciones sutiles de color y escala para el botón de favorito
     val iconTint by animateColorAsState(
-        targetValue = if (hotel.esFavorito) Color(0xFFE53935) else Color.Gray,
+        targetValue = if (hotel.esFavorito) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
         animationSpec = spring(),
         label = "tintAnimation"
+    )
+
+    val scale by animateFloatAsState(
+        targetValue = if (hotel.esFavorito) 1.2f else 1.0f,
+        animationSpec = spring(dampingRatio = 0.4f, stiffness = 400f),
+        label = "scaleAnimation"
     )
 
     Card(
         onClick = onClick,
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
+        shape = MaterialTheme.shapes.large,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(190.dp)
+                    .height(200.dp)
             ) {
-                // Imagen de la API/PicSum
+                // Imagen con Coil y esquinas redondeadas
                 AsyncImage(
                     model = hotel.imagenUrl,
                     contentDescription = hotel.nombre,
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(MaterialTheme.shapes.medium),
                     contentScale = ContentScale.Crop
                 )
 
-                // Badge flotante para las Estrellas
+                // Insignia de Estrellas con iconos
                 Surface(
                     modifier = Modifier
                         .padding(12.dp)
                         .align(Alignment.TopStart),
-                    shape = RoundedCornerShape(20.dp),
-                    color = Color.Black.copy(alpha = 0.65f)
+                    shape = MaterialTheme.shapes.small,
+                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.85f)
                 ) {
                     Row(
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(2.dp)
                     ) {
-                        Icon(
-                            imageVector = Icons.Filled.Star,
-                            contentDescription = null,
-                            tint = Color(0xFFFFC107),
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = "${hotel.estrellas}.0",
-                            color = Color.White,
-                            style = MaterialTheme.typography.labelMedium,
-                            fontWeight = FontWeight.Bold
-                        )
+                        repeat(5) { index ->
+                            Icon(
+                                imageVector = Icons.Default.Star,
+                                contentDescription = null,
+                                tint = if (index < hotel.estrellas) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f),
+                                modifier = Modifier.size(14.dp)
+                            )
+                        }
                     }
                 }
 
-                // Botón flotante para el Favorito (Estilo Overlay)
+                // Botón de Favorito sobre la imagen con animación
                 IconButton(
                     onClick = onFavoritoClick,
                     modifier = Modifier
-                        .padding(8.dp)
+                        .padding(12.dp)
                         .align(Alignment.TopEnd)
-                        .background(Color.White.copy(alpha = 0.85f), shape = RoundedCornerShape(50))
+                        .background(
+                            color = MaterialTheme.colorScheme.surface.copy(alpha = 0.85f),
+                            shape = CircleShape
+                        )
                         .size(40.dp)
                 ) {
                     Icon(
                         imageVector = if (hotel.esFavorito) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
                         contentDescription = "Favorito",
-                        tint = iconTint
+                        tint = iconTint,
+                        modifier = Modifier.graphicsLayer(scaleX = scale, scaleY = scale)
                     )
                 }
             }
@@ -121,29 +130,39 @@ fun ItemHotel(
                     )
 
                     Text(
-                        text = "S/ ${hotel.precioNoche}",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.ExtraBold,
+                        text = "$ ${hotel.precioNoche} / noche",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary
                     )
                 }
 
-                Spacer(modifier = Modifier.height(2.dp))
+                Spacer(modifier = Modifier.height(4.dp))
 
-                // Ciudad / Ubicación
-                Text(
-                    text = hotel.ciudad,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                // Ciudad con icono de ubicación
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.LocationOn,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Text(
+                        text = hotel.ciudad,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // Descripción recortada
                 Text(
                     text = hotel.descripcion,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
