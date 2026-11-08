@@ -57,6 +57,10 @@ dependencies {
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.okhttp3:okhttp:4.11.0")
 
+    // ViewModel Compose & Icons
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
+    implementation("androidx.compose.material:material-icons-extended:1.6.0")
+
     // Coil
     implementation("io.coil-kt:coil-compose:2.5.0")
 }
