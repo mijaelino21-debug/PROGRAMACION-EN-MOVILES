@@ -1,8 +1,10 @@
 package com.tecsup.catalogo.ui.lista
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
@@ -15,6 +17,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.tecsup.catalogo.ui.UiState
 import com.tecsup.catalogo.ui.components.AvisoSinConexion
@@ -113,13 +117,51 @@ fun ListaScreen(
                             is UiState.Exito -> {
                                 if (e.datos.isEmpty()) {
                                     Box(
-                                        modifier = Modifier.fillMaxSize(),
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .padding(32.dp),
                                         contentAlignment = Alignment.Center
                                     ) {
-                                        Text(
-                                            text = if (soloFavoritos) "No tienes hoteles agregados a favoritos" else "No hay hoteles disponibles",
-                                            style = MaterialTheme.typography.bodyLarge
-                                        )
+                                        Column(
+                                            horizontalAlignment = Alignment.CenterHorizontally,
+                                            verticalArrangement = Arrangement.Center
+                                        ) {
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(80.dp)
+                                                    .background(
+                                                        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
+                                                        shape = CircleShape
+                                                    ),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                Icon(
+                                                    imageVector = if (soloFavoritos) Icons.Outlined.FavoriteBorder else Icons.Outlined.Home,
+                                                    contentDescription = null,
+                                                    modifier = Modifier.size(40.dp),
+                                                    tint = MaterialTheme.colorScheme.primary
+                                                )
+                                            }
+
+                                            Spacer(modifier = Modifier.height(16.dp))
+
+                                            Text(
+                                                text = if (soloFavoritos) "Sin favoritos" else "Sin hoteles disponibles",
+                                                style = MaterialTheme.typography.titleMedium,
+                                                fontWeight = FontWeight.Bold,
+                                                color = MaterialTheme.colorScheme.onSurface,
+                                                textAlign = TextAlign.Center
+                                            )
+
+                                            Spacer(modifier = Modifier.height(4.dp))
+
+                                            Text(
+                                                text = if (soloFavoritos) "No tienes hoteles agregados a favoritos" else "Todavía no hay hoteles disponibles",
+                                                style = MaterialTheme.typography.bodyMedium,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                textAlign = TextAlign.Center
+                                            )
+                                        }
                                     }
                                 } else {
                                     LazyColumn(
