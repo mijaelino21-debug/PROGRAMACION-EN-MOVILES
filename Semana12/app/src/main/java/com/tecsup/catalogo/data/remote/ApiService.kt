@@ -1,0 +1,9 @@
+package com.tecsup.catalogo.data.remote
+
+import com.tecsup.catalogo.data.remote.dto.HotelDto
+import retrofit2.http.GET
+
+interface ApiService {
+    @GET("hoteles")
+    suspend fun obtenerHoteles(): List<HotelDto>
+}
