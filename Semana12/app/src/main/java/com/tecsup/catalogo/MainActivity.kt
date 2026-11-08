@@ -1,13 +1,18 @@
 package com.tecsup.catalogo
 
+import android.Manifest
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -19,6 +24,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tecsup.catalogo.data.local.AppDatabase
 import com.tecsup.catalogo.data.remote.RetrofitClient
 import com.tecsup.catalogo.data.repository.HotelRepositoryImpl
+import com.tecsup.catalogo.notification.NotificadorAndroid
 import com.tecsup.catalogo.ui.admin.AdminScreen
 import com.tecsup.catalogo.ui.admin.AdminViewModel
 import com.tecsup.catalogo.ui.auth.AuthViewModel
@@ -27,17 +33,11 @@ import com.tecsup.catalogo.ui.detalle.DetalleScreen
 import com.tecsup.catalogo.ui.detalle.DetalleViewModel
 import com.tecsup.catalogo.ui.lista.ListaScreen
 import com.tecsup.catalogo.ui.lista.ListaViewModel
-import android.Manifest
-import android.os.Build
-import androidx.activity.result.contract.ActivityResultContracts
-import com.tecsup.catalogo.notification.NotificadorAndroid
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 
 class MainActivity : ComponentActivity() {
 
     private val authViewModel: AuthViewModel by viewModels()
-    private val adminViewModel: AdminViewModel by viewModels()
+
     // Si el usuario niega el permiso, la app funciona normal pero sin avisos
     private val pedirPermisoNotificaciones =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { }
@@ -52,18 +52,23 @@ class MainActivity : ComponentActivity() {
         val database = AppDatabase.obtenerBaseDatos(context)
         val apiService = RetrofitClient.apiService
         val repository = HotelRepositoryImpl(apiService, database.hotelDao())
+        val notificador = NotificadorAndroid(context)
 
-        val factory = object : ViewModelProvider.Factory {
+        val listaFactory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                return ListaViewModel(repository, NotificadorAndroid(context)) as T
+                return ListaViewModel(repository, notificador) as T
             }
         }
+        val listaViewModel = ViewModelProvider(this, listaFactory)[ListaViewModel::class.java]
 
-        val listaViewModel = ViewModelProvider(this, factory)[ListaViewModel::class.java]
-
-
-
+        val adminFactory = object : ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                return AdminViewModel(repository, notificador) as T
+            }
+        }
+        val adminViewModel = ViewModelProvider(this, adminFactory)[AdminViewModel::class.java]
 
         setContent {
             MaterialTheme {
@@ -82,7 +87,6 @@ class MainActivity : ComponentActivity() {
                     LaunchedEffect(isLoggedIn) {
                         if (isLoggedIn) adminViewModel.cargarRol() else adminViewModel.limpiarRol()
                     }
-
 
                     if (isLoggedIn) {
                         val detalleId = hotelDetalleId
