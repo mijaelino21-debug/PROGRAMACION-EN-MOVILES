@@ -6,7 +6,8 @@ import retrofit2.Retrofit
 import retrofit2.converter.kotlinx.serialization.asConverterFactory
 
 object RetrofitClient {
-    private const val BASE_URL = "https://api.ejemplo.com/v1/"
+    // Tu URL base real de MockAPI (debe terminar en '/')
+    private const val BASE_URL = "https://6aed207ffc3b911e6fd5f209.mockapi.io/"
 
     private val json = Json {
         ignoreUnknownKeys = true
