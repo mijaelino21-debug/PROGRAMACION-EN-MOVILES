@@ -28,7 +28,8 @@ import com.tecsup.catalogo.domain.model.Hotel
 fun ItemHotel(
     hotel: Hotel,
     onFavoritoClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit = {}
 ) {
     // Animación suave al marcar/desmarcar el corazón
     val iconTint by animateColorAsState(
@@ -38,6 +39,7 @@ fun ItemHotel(
     )
 
     Card(
+        onClick = onClick,
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),

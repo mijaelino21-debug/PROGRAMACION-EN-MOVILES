@@ -8,6 +8,8 @@ import com.tecsup.catalogo.data.remote.ApiService
 import com.tecsup.catalogo.domain.model.Hotel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import com.tecsup.catalogo.data.dto.toDomain
+import kotlinx.coroutines.CancellationException
 
 class HotelRepositoryImpl(
     private val apiService: ApiService,
@@ -17,6 +19,19 @@ class HotelRepositoryImpl(
     override fun obtenerHoteles(): Flow<List<Hotel>> {
         return hotelDao.todos().map { entities ->
             entities.map { entity -> entity.toHotel() }
+        }
+    }
+    override suspend fun obtenerDetalle(id: Int): Result<Hotel> {
+        return try {
+            val dto = apiService.getHotel(id)
+            val esFav = id in hotelDao.idsFavoritos()
+            Result.success(dto.toDomain().copy(esFavorito = esFav))
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            // Sin internet: usamos lo guardado en Room
+            val local = hotelDao.porId(id)
+            if (local != null) Result.success(local.toHotel()) else Result.failure(e)
         }
     }
 

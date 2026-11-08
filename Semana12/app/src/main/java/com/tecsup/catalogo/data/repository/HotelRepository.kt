@@ -10,4 +10,7 @@ interface HotelRepository {
     suspend fun alternarFavorito(id: Int)
     suspend fun obtenerEstadisticas(): Pair<Int, Int>
     suspend fun limpiarCache()
+
+    suspend fun obtenerDetalle(id: Int): Result<Hotel>
+
 }

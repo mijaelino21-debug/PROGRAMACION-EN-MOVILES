@@ -26,6 +26,7 @@ fun ListaScreen(
     viewModel: ListaViewModel,
     userEmail: String,
     isAdmin: Boolean,
+    onHotelClick: (Int) -> Unit,
     onIrAlAdmin: () -> Unit,
     onCerrarSesion: () -> Unit
 ) {
@@ -111,7 +112,8 @@ fun ListaScreen(
                             items(hoteles, key = { it.id }) { hotel ->
                                 ItemHotel(
                                     hotel = hotel,
-                                    onFavoritoClick = { viewModel.onFavoritoClicked(hotel.id) }
+                                    onFavoritoClick = { viewModel.onFavoritoClicked(hotel.id) },
+                                    onClick = { onHotelClick(hotel.id) }
                                 )
                             }
                         }

@@ -13,6 +13,9 @@ interface HotelDao {
     @Query("SELECT * FROM hoteles WHERE esFavorito = 1 ORDER BY nombre")
     fun favoritos(): Flow<List<HotelEntity>>
 
+    @Query("SELECT * FROM hoteles WHERE id = :id")
+    suspend fun porId(id: Int): HotelEntity?
+
     @Query("SELECT id FROM hoteles WHERE esFavorito = 1")
     suspend fun idsFavoritos(): List<Int>
 
