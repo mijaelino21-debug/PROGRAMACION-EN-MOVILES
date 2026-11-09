@@ -92,6 +92,7 @@ service cloud.firestore {
   }
 }
 
+
 ## Mejoras con IA (rama `mejora-ia-12`)
 
 Después de la versión base (Fase 1, sin IA), se hizo una segunda fase con ayuda de IA en la rama `mejora-ia-12`. Cada consulta está documentada en [PROMPTS.md](PROMPTS.md).
@@ -111,43 +112,14 @@ Después de la versión base (Fase 1, sin IA), se hizo una segunda fase con ayud
 
 ### Capturas de las mejoras
 
-| Lista con búsqueda y filtros |
-<img width="185" height="397" alt="image" src="https://github.com/user-attachments/assets/d92dd4f2-e878-4b9c-812b-7b5beb456480" />
+| Lista con búsqueda y filtros | Detalle y reserva | Mis reservas |
+|---|---|---|
+| ![Filtros](URL_CAPTURA_1) | ![Reserva](URL_CAPTURA_2) | ![Mis reservas](URL_CAPTURA_3) |
 
-|Detalle y reserva |
-<img width="188" height="400" alt="image" src="https://github.com/user-attachments/assets/c1b10916-9eae-4aba-8e3f-47eb33a3c8b3" />
-
-<img width="195" height="406" alt="image" src="https://github.com/user-attachments/assets/9c3748aa-5c7d-4d68-9846-a48e5b27b6ac" />
-
-|Mis reservas |
-
-<img width="191" height="399" alt="image" src="https://github.com/user-attachments/assets/37c0d508-b0f6-423d-8b7c-7fb57c946401" />
-
-
-| Perfil de administrador |
-
-<img width="188" height="392" alt="image" src="https://github.com/user-attachments/assets/0e8b36e7-ae75-4f5f-807e-3cf60e9bf3a5" />
-
-<img width="189" height="398" alt="image" src="https://github.com/user-attachments/assets/f2a6d513-de6d-4328-9391-e9bd4a8d6570" />
-
-
-| Gestión de hoteles |
-
-<img width="190" height="404" alt="image" src="https://github.com/user-attachments/assets/4c959532-9025-4413-975c-b85fba1b6d65" />
-
-
-|Gestión de reservas |
-
-<img width="193" height="397" alt="image" src="https://github.com/user-attachments/assets/1cad6302-e705-44c3-b4ba-bae666edf2ab" />
-
+| Perfil de administrador | Gestión de hoteles | Gestión de reservas |
+|---|---|---|
+| ![Perfil admin](URL_CAPTURA_4) | ![Gestión hoteles](URL_CAPTURA_5) | ![Gestión reservas](URL_CAPTURA_6) |
 
 ### Pruebas unitarias
 
-<img width="957" height="332" alt="image" src="https://github.com/user-attachments/assets/7f5103b4-823d-4fc6-af62-d6f185268a11" />
-
-Resultado: 11 pruebas de `ListaViewModelTest`, todas aprobadas.
-
 Se ejecutan con:
-```
-.\gradlew.bat testDebugUnitTest
-```
