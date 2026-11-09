@@ -66,7 +66,7 @@ class ListaViewModel(
     init {
         // La lista SIEMPRE sale de Room. Retrofit solo la actualiza.
         viewModelScope.launch {
-            repository.items.collect { lista ->
+            repository.hotelesActivos.collect { lista ->
                 todosLosHoteles = lista
                 _availableCities.value = lista.map { it.ciudad }.distinct().sorted()
                 // No mostramos "vacío" antes de que termine el primer refresco
