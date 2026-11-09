@@ -30,6 +30,8 @@ fun ListaScreen(
     onHotelClick: (Int) -> Unit,
     onIrAlAdmin: () -> Unit,
     onVerMisReservas: () -> Unit,
+    onIrAGestionHoteles: () -> Unit = {},
+    onIrAGestionReservas: () -> Unit = {},
     onCerrarSesion: () -> Unit
 ) {
     val estado by viewModel.estado.collectAsState()
@@ -99,6 +101,8 @@ fun ListaScreen(
                         isAdmin = isAdmin,
                         onIrAlAdmin = onIrAlAdmin,
                         onVerMisReservas = onVerMisReservas,
+                        onIrAGestionHoteles = onIrAGestionHoteles,
+                        onIrAGestionReservas = onIrAGestionReservas,
                         onVerMisFavoritos = {
                             if (!soloFavoritos) viewModel.toggleFiltroFavoritos()
                             pestanaActual = PestanaActual.FAVORITOS
@@ -120,12 +124,12 @@ fun ListaScreen(
 
                             is UiState.Exito -> {
                                 val hasFilters = !soloFavoritos && (
-                                    searchQuery.isNotEmpty() ||
-                                    selectedCity != null ||
-                                    selectedRating != RatingFilter.ALL ||
-                                    selectedPrice != PriceFilter.ALL ||
-                                    sortOrder != SortOrder.ORIGINAL
-                                )
+                                        searchQuery.isNotEmpty() ||
+                                                selectedCity != null ||
+                                                selectedRating != RatingFilter.ALL ||
+                                                selectedPrice != PriceFilter.ALL ||
+                                                sortOrder != SortOrder.ORIGINAL
+                                        )
 
                                 if (e.datos.isEmpty()) {
                                     EstadoVacio(

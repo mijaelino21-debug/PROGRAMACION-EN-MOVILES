@@ -1,4 +1,3 @@
-
 package com.tecsup.catalogo
 
 import android.Manifest
@@ -172,14 +171,16 @@ class MainActivity : ComponentActivity() {
                                         isAdmin = true,
                                         onHotelClick = { hotelDetalleId = it },
                                         onIrAlAdmin = { verCatalogoAdmin = false },
+                                        onVerMisReservas = { },
+                                        onIrAGestionHoteles = { verAdminHoteles = true },
+                                        onIrAGestionReservas = { verAdminReservas = true },
                                         onCerrarSesion = {
                                             hotelDetalleId = null
                                             verCatalogoAdmin = false
                                             verAdminReservas = false
                                             verAdminHoteles = false
                                             authViewModel.logout()
-                                        },
-                                        onVerMisReservas = { }
+                                        }
                                     )
                                 }
 
