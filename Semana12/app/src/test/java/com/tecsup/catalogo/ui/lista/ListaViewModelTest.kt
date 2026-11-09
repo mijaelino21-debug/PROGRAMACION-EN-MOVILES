@@ -164,4 +164,84 @@ class ListaViewModelTest {
 
         assertEquals(listOf(1), vm.hoteles().map { it.id })
     }
+
+    @Test
+    fun `buscar por nombre filtra los hoteles`() {
+        repo.remotos = listOf(
+            hotel(1).copy(nombre = "Hotel Marriot"),
+            hotel(2).copy(nombre = "Hotel Sheraton")
+        )
+        val vm = crearViewModel()
+        vm.onSearchQueryChanged("Marriot")
+        assertEquals(1, vm.hoteles().size)
+        assertEquals("Hotel Marriot", vm.hoteles().first().nombre)
+    }
+
+    @Test
+    fun `filtrar por ciudad muestra solo los hoteles de esa ciudad`() {
+        repo.remotos = listOf(
+            hotel(1).copy(ciudad = "Lima"),
+            hotel(2).copy(ciudad = "Cusco")
+        )
+        val vm = crearViewModel()
+        vm.onCitySelected("Cusco")
+        assertEquals(1, vm.hoteles().size)
+        assertEquals("Cusco", vm.hoteles().first().ciudad)
+    }
+
+    @Test
+    fun `ordenar por precio menor a mayor`() {
+        repo.remotos = listOf(
+            hotel(1).copy(id = 1, precioNoche = 200.0),
+            hotel(2).copy(id = 2, precioNoche = 50.0),
+            hotel(3).copy(id = 3, precioNoche = 100.0)
+        )
+        val vm = crearViewModel()
+        vm.onSortOrderChanged(SortOrder.PRICE_LOW_TO_HIGH)
+        val precios = vm.hoteles().map { it.precioNoche }
+        assertEquals(listOf(50.0, 100.0, 200.0), precios)
+    }
+
+    @Test
+    fun `ordenar por mejor calificacion`() {
+        repo.remotos = listOf(
+            hotel(1).copy(id = 1, estrellas = 3),
+            hotel(2).copy(id = 2, estrellas = 5),
+            hotel(3).copy(id = 3, estrellas = 4)
+        )
+        val vm = crearViewModel()
+        vm.onSortOrderChanged(SortOrder.BEST_RATING)
+        val estrellas = vm.hoteles().map { it.estrellas }
+        assertEquals(listOf(5, 4, 3), estrellas)
+    }
+
+    @Test
+    fun `filtros combinados de ciudad y calificacion`() {
+        repo.remotos = listOf(
+            hotel(1).copy(id = 1, ciudad = "Lima", estrellas = 5),
+            hotel(2).copy(id = 2, ciudad = "Lima", estrellas = 3),
+            hotel(3).copy(id = 3, ciudad = "Cusco", estrellas = 5)
+        )
+        val vm = crearViewModel()
+        vm.onCitySelected("Lima")
+        vm.onRatingSelected(RatingFilter.FIVE)
+        val lista = vm.hoteles()
+        assertEquals(1, lista.size)
+        assertEquals(1, lista.first().id)
+    }
+
+    @Test
+    fun `limpiar filtros restablece la lista completa`() {
+        repo.remotos = listOf(
+            hotel(1).copy(id = 1, nombre = "Marriot", ciudad = "Lima"),
+            hotel(2).copy(id = 2, nombre = "Sheraton", ciudad = "Cusco")
+        )
+        val vm = crearViewModel()
+        vm.onSearchQueryChanged("Marriot")
+        vm.onCitySelected("Lima")
+        assertEquals(1, vm.hoteles().size)
+
+        vm.limpiarFiltros()
+        assertEquals(2, vm.hoteles().size)
+    }
 }

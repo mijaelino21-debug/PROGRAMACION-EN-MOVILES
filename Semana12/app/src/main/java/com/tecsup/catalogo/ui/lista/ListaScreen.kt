@@ -3,15 +3,19 @@ package com.tecsup.catalogo.ui.lista
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -41,6 +45,12 @@ fun ListaScreen(
     val estado by viewModel.estado.collectAsState()
     val aviso by viewModel.aviso.collectAsState()
     val soloFavoritos by viewModel.soloFavoritos.collectAsState()
+    val searchQuery by viewModel.searchQuery.collectAsState()
+    val selectedCity by viewModel.selectedCity.collectAsState()
+    val selectedRating by viewModel.selectedRating.collectAsState()
+    val selectedPrice by viewModel.selectedPrice.collectAsState()
+    val sortOrder by viewModel.sortOrder.collectAsState()
+    val availableCities by viewModel.availableCities.collectAsState()
 
     var pestanaActual by remember { mutableStateOf(PestanaActual.EXPLORAR) }
 
@@ -115,6 +125,14 @@ fun ListaScreen(
                             )
 
                             is UiState.Exito -> {
+                                val hasFilters = !soloFavoritos && (
+                                    searchQuery.isNotEmpty() ||
+                                    selectedCity != null ||
+                                    selectedRating != RatingFilter.ALL ||
+                                    selectedPrice != PriceFilter.ALL ||
+                                    sortOrder != SortOrder.ORIGINAL
+                                )
+
                                 if (e.datos.isEmpty()) {
                                     Box(
                                         modifier = Modifier
@@ -136,7 +154,11 @@ fun ListaScreen(
                                                 contentAlignment = Alignment.Center
                                             ) {
                                                 Icon(
-                                                    imageVector = if (soloFavoritos) Icons.Outlined.FavoriteBorder else Icons.Outlined.Home,
+                                                    imageVector = when {
+                                                        hasFilters -> Icons.Outlined.Search
+                                                        soloFavoritos -> Icons.Outlined.FavoriteBorder
+                                                        else -> Icons.Outlined.Home
+                                                    },
                                                     contentDescription = null,
                                                     modifier = Modifier.size(40.dp),
                                                     tint = MaterialTheme.colorScheme.primary
@@ -146,7 +168,11 @@ fun ListaScreen(
                                             Spacer(modifier = Modifier.height(16.dp))
 
                                             Text(
-                                                text = if (soloFavoritos) "Sin favoritos" else "Sin hoteles disponibles",
+                                                text = when {
+                                                    hasFilters -> "No se encontraron hoteles"
+                                                    soloFavoritos -> "Sin favoritos"
+                                                    else -> "Sin hoteles disponibles"
+                                                },
                                                 style = MaterialTheme.typography.titleMedium,
                                                 fontWeight = FontWeight.Bold,
                                                 color = MaterialTheme.colorScheme.onSurface,
@@ -156,25 +182,246 @@ fun ListaScreen(
                                             Spacer(modifier = Modifier.height(4.dp))
 
                                             Text(
-                                                text = if (soloFavoritos) "No tienes hoteles agregados a favoritos" else "Todavía no hay hoteles disponibles",
+                                                text = when {
+                                                    hasFilters -> "Intenta con otros términos de búsqueda o filtros diferentes"
+                                                    soloFavoritos -> "Todavía no has agregado hoteles a tus favoritos"
+                                                    else -> "Todavía no hay hoteles disponibles"
+                                                },
                                                 style = MaterialTheme.typography.bodyMedium,
                                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                                 textAlign = TextAlign.Center
                                             )
+
+                                            if (hasFilters) {
+                                                Spacer(modifier = Modifier.height(16.dp))
+                                                Button(onClick = { viewModel.limpiarFiltros() }) {
+                                                    Text("Limpiar filtros")
+                                                }
+                                            }
                                         }
                                     }
                                 } else {
-                                    LazyColumn(
-                                        modifier = Modifier.fillMaxSize(),
-                                        contentPadding = PaddingValues(16.dp),
-                                        verticalArrangement = Arrangement.spacedBy(16.dp)
-                                    ) {
-                                        items(e.datos, key = { it.id }) { hotel ->
-                                            ItemHotel(
-                                                hotel = hotel,
-                                                onFavoritoClick = { viewModel.onFavoritoClicked(hotel.id) },
-                                                onClick = { onHotelClick(hotel.id) }
+                                    Column(modifier = Modifier.fillMaxSize()) {
+                                        // Filtros visibles directamente en la pantalla (solo en Explorar)
+                                        if (!soloFavoritos) {
+                                            // 1. Barra de búsqueda
+                                            OutlinedTextField(
+                                                value = searchQuery,
+                                                onValueChange = viewModel::onSearchQueryChanged,
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .padding(horizontal = 16.dp, vertical = 6.dp),
+                                                placeholder = { Text("Buscar hotel por nombre...") },
+                                                leadingIcon = {
+                                                    Icon(imageVector = Icons.Default.Search, contentDescription = "Buscar")
+                                                },
+                                                trailingIcon = {
+                                                    if (searchQuery.isNotEmpty()) {
+                                                        IconButton(onClick = { viewModel.onSearchQueryChanged("") }) {
+                                                            Icon(imageVector = Icons.Default.Clear, contentDescription = "Borrar búsqueda")
+                                                        }
+                                                    }
+                                                },
+                                                singleLine = true,
+                                                shape = MaterialTheme.shapes.medium
                                             )
+
+                                            // 2. Filtro por Ciudad
+                                            if (availableCities.isNotEmpty()) {
+                                                Row(
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .padding(horizontal = 16.dp, vertical = 2.dp),
+                                                    verticalAlignment = Alignment.CenterVertically
+                                                ) {
+                                                    Text(
+                                                        text = "Ciudad:",
+                                                        style = MaterialTheme.typography.bodySmall,
+                                                        fontWeight = FontWeight.Bold,
+                                                        modifier = Modifier.width(80.dp)
+                                                    )
+                                                    LazyRow(
+                                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                                        contentPadding = PaddingValues(vertical = 2.dp)
+                                                    ) {
+                                                        item {
+                                                            FilterChip(
+                                                                selected = selectedCity == null,
+                                                                onClick = { viewModel.onCitySelected(null) },
+                                                                label = { Text("Todas") }
+                                                            )
+                                                        }
+                                                        items(availableCities) { city ->
+                                                            FilterChip(
+                                                                selected = selectedCity == city,
+                                                                onClick = { viewModel.onCitySelected(city) },
+                                                                label = { Text(city) }
+                                                            )
+                                                        }
+                                                    }
+                                                }
+                                            }
+
+                                            // 3. Filtro por Calificación
+                                            Row(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .padding(horizontal = 16.dp, vertical = 2.dp),
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                Text(
+                                                    text = "Calificación:",
+                                                    style = MaterialTheme.typography.bodySmall,
+                                                    fontWeight = FontWeight.Bold,
+                                                    modifier = Modifier.width(80.dp)
+                                                )
+                                                LazyRow(
+                                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                                    contentPadding = PaddingValues(vertical = 2.dp)
+                                                ) {
+                                                    item {
+                                                        FilterChip(
+                                                            selected = selectedRating == RatingFilter.ALL,
+                                                            onClick = { viewModel.onRatingSelected(RatingFilter.ALL) },
+                                                            label = { Text("Todas") }
+                                                        )
+                                                    }
+                                                    item {
+                                                        FilterChip(
+                                                            selected = selectedRating == RatingFilter.THREE_PLUS,
+                                                            onClick = { viewModel.onRatingSelected(RatingFilter.THREE_PLUS) },
+                                                            label = { Text("⭐ 3+") }
+                                                        )
+                                                    }
+                                                    item {
+                                                        FilterChip(
+                                                            selected = selectedRating == RatingFilter.FOUR_PLUS,
+                                                            onClick = { viewModel.onRatingSelected(RatingFilter.FOUR_PLUS) },
+                                                            label = { Text("⭐ 4+") }
+                                                        )
+                                                    }
+                                                    item {
+                                                        FilterChip(
+                                                            selected = selectedRating == RatingFilter.FIVE,
+                                                            onClick = { viewModel.onRatingSelected(RatingFilter.FIVE) },
+                                                            label = { Text("⭐ 5") }
+                                                        )
+                                                    }
+                                                }
+                                            }
+
+                                            // 4. Filtro por Precio
+                                            Row(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .padding(horizontal = 16.dp, vertical = 2.dp),
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                Text(
+                                                    text = "Precio:",
+                                                    style = MaterialTheme.typography.bodySmall,
+                                                    fontWeight = FontWeight.Bold,
+                                                    modifier = Modifier.width(80.dp)
+                                                )
+                                                LazyRow(
+                                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                                    contentPadding = PaddingValues(vertical = 2.dp)
+                                                ) {
+                                                    item {
+                                                        FilterChip(
+                                                            selected = selectedPrice == PriceFilter.ALL,
+                                                            onClick = { viewModel.onPriceSelected(PriceFilter.ALL) },
+                                                            label = { Text("Todos") }
+                                                        )
+                                                    }
+                                                    item {
+                                                        FilterChip(
+                                                            selected = selectedPrice == PriceFilter.ECONOMIC,
+                                                            onClick = { viewModel.onPriceSelected(PriceFilter.ECONOMIC) },
+                                                            label = { Text("Económico") }
+                                                        )
+                                                    }
+                                                    item {
+                                                        FilterChip(
+                                                            selected = selectedPrice == PriceFilter.INTERMEDIATE,
+                                                            onClick = { viewModel.onPriceSelected(PriceFilter.INTERMEDIATE) },
+                                                            label = { Text("Intermedio") }
+                                                        )
+                                                    }
+                                                    item {
+                                                        FilterChip(
+                                                            selected = selectedPrice == PriceFilter.PREMIUM,
+                                                            onClick = { viewModel.onPriceSelected(PriceFilter.PREMIUM) },
+                                                            label = { Text("Premium") }
+                                                        )
+                                                    }
+                                                }
+                                            }
+
+                                            // 5. Ordenamiento
+                                            Row(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .padding(horizontal = 16.dp, vertical = 2.dp),
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                Text(
+                                                    text = "Ordenar:",
+                                                    style = MaterialTheme.typography.bodySmall,
+                                                    fontWeight = FontWeight.Bold,
+                                                    modifier = Modifier.width(80.dp)
+                                                )
+                                                LazyRow(
+                                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                                    contentPadding = PaddingValues(vertical = 2.dp)
+                                                ) {
+                                                    item {
+                                                        FilterChip(
+                                                            selected = sortOrder == SortOrder.ORIGINAL,
+                                                            onClick = { viewModel.onSortOrderChanged(SortOrder.ORIGINAL) },
+                                                            label = { Text("Original") }
+                                                        )
+                                                    }
+                                                    item {
+                                                        FilterChip(
+                                                            selected = sortOrder == SortOrder.PRICE_LOW_TO_HIGH,
+                                                            onClick = { viewModel.onSortOrderChanged(SortOrder.PRICE_LOW_TO_HIGH) },
+                                                            label = { Text("Menor precio ↑") }
+                                                        )
+                                                    }
+                                                    item {
+                                                        FilterChip(
+                                                            selected = sortOrder == SortOrder.PRICE_HIGH_TO_LOW,
+                                                            onClick = { viewModel.onSortOrderChanged(SortOrder.PRICE_HIGH_TO_LOW) },
+                                                            label = { Text("Mayor precio ↓") }
+                                                        )
+                                                    }
+                                                    item {
+                                                        FilterChip(
+                                                            selected = sortOrder == SortOrder.BEST_RATING,
+                                                            onClick = { viewModel.onSortOrderChanged(SortOrder.BEST_RATING) },
+                                                            label = { Text("Mejor calificación ⭐") }
+                                                        )
+                                                    }
+                                                }
+                                            }
+                                        }
+
+                                        // Lista de hoteles
+                                        LazyColumn(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .weight(1f),
+                                            contentPadding = PaddingValues(16.dp),
+                                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                                        ) {
+                                            items(e.datos, key = { it.id }) { hotel ->
+                                                ItemHotel(
+                                                    hotel = hotel,
+                                                    onFavoritoClick = { viewModel.onFavoritoClicked(hotel.id) },
+                                                    onClick = { onHotelClick(hotel.id) }
+                                                )
+                                            }
                                         }
                                     }
                                 }
