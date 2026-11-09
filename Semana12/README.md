@@ -79,18 +79,6 @@ Crear en Firebase Authentication un usuario `admin` y un usuario normal. Luego e
 - **ID del documento:** el UID del usuario (Authentication > Usuarios)
 - **Campos (string):** `rol` = `admin` o `usuario`, y `nombre`
 
-Reglas de Firestore:
-
-```
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /usuarios/{uid} {
-      allow read: if request.auth != null && request.auth.uid == uid;
-      allow write: if false;
-    }
-  }
-}
 
 
 ## Mejoras con IA (rama `mejora-ia-12`)
@@ -112,14 +100,43 @@ Después de la versión base (Fase 1, sin IA), se hizo una segunda fase con ayud
 
 ### Capturas de las mejoras
 
-| Lista con búsqueda y filtros | Detalle y reserva | Mis reservas |
-|---|---|---|
-| ![Filtros](URL_CAPTURA_1) | ![Reserva](URL_CAPTURA_2) | ![Mis reservas](URL_CAPTURA_3) |
+| Lista con búsqueda y filtros | }
 
-| Perfil de administrador | Gestión de hoteles | Gestión de reservas |
-|---|---|---|
-| ![Perfil admin](URL_CAPTURA_4) | ![Gestión hoteles](URL_CAPTURA_5) | ![Gestión reservas](URL_CAPTURA_6) |
+<img width="191" height="399" alt="image" src="https://github.com/user-attachments/assets/d721f6f5-0011-4694-a368-fc8910368b0a" />
+
+<img width="188" height="397" alt="image" src="https://github.com/user-attachments/assets/52d793aa-2410-4c9d-8396-523c3e71d4a4" />
+
+
+|Detalle y reserva | 
+
+<img width="188" height="398" alt="image" src="https://github.com/user-attachments/assets/91080655-1a57-467a-be74-6956b0cafe29" />
+
+<img width="196" height="398" alt="image" src="https://github.com/user-attachments/assets/74294f3f-4cfe-4930-aa79-2099b92e7e89" />
+
+
+|Mis reservas |
+
+<img width="195" height="398" alt="image" src="https://github.com/user-attachments/assets/56d71d15-91d9-4099-a1ef-3834873743b8" />
+
+| Perfil de administrador | 
+
+<img width="197" height="399" alt="image" src="https://github.com/user-attachments/assets/21c796f8-4c1f-4672-985d-e9a4dbdb488d" />
+
+<img width="188" height="401" alt="image" src="https://github.com/user-attachments/assets/fd9654f4-bf7d-44a2-bd67-aee45aeb4794" />
+
+
+|Gestión de hoteles | 
+
+<img width="188" height="398" alt="image" src="https://github.com/user-attachments/assets/87f96f79-77d8-4df7-9c1c-bb2e728251c2" />
+
+
+|Gestión de reservas |
+
+<img width="183" height="402" alt="image" src="https://github.com/user-attachments/assets/1a361f7b-fca5-4cb5-aa67-129705b877ad" />
+
+
 
 ### Pruebas unitarias
+<img width="926" height="303" alt="image" src="https://github.com/user-attachments/assets/e8325cb8-a4ca-4915-abea-5b84e2f2e4e4" />
 
-Se ejecutan con:
+
