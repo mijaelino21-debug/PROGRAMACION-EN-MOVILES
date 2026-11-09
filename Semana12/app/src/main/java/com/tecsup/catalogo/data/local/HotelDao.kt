@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface HotelDao {
+
     @Query("SELECT * FROM hoteles ORDER BY nombre")
     fun todos(): Flow<List<HotelEntity>>
 

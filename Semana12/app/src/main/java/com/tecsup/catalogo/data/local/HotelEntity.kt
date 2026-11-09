@@ -5,7 +5,9 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "hoteles")
 data class HotelEntity(
-    @PrimaryKey(autoGenerate = true) val id: Int,
+    @PrimaryKey(autoGenerate = true)
+    val id: Int = 0,
+    val remoteId: String? = null,
     val nombre: String,
     val descripcion: String,
     val ciudad: String,

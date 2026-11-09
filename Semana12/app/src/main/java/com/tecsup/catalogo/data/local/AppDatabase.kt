@@ -7,7 +7,11 @@ import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
-@Database(entities = [HotelEntity::class, ReservaEntity::class], version = 6, exportSchema = false)
+@Database(
+    entities = [HotelEntity::class, ReservaEntity::class],
+    version = 7,
+    exportSchema = false
+)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun hotelDao(): HotelDao
@@ -19,13 +23,16 @@ abstract class AppDatabase : RoomDatabase() {
 
         val MIGRATION_1_2 = object : Migration(1, 2) {
             override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("ALTER TABLE hoteles ADD COLUMN servicios TEXT NOT NULL DEFAULT 'Wi-Fi gratis,Piscina,Aire acondicionado,Restaurante,Recepción 24/7'")
+                database.execSQL(
+                    "ALTER TABLE hoteles ADD COLUMN servicios TEXT NOT NULL DEFAULT 'Wi-Fi gratis,Piscina,Aire acondicionado,Restaurante,Recepción 24/7'"
+                )
             }
         }
 
         val MIGRATION_2_3 = object : Migration(2, 3) {
             override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("""
+                database.execSQL(
+                    """
                     CREATE TABLE IF NOT EXISTS reservas (
                         id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
                         usuarioId TEXT NOT NULL,
@@ -40,26 +47,43 @@ abstract class AppDatabase : RoomDatabase() {
                         estado TEXT NOT NULL,
                         fechaCreacion INTEGER NOT NULL
                     )
-                """)
+                    """.trimIndent()
+                )
             }
         }
 
         val MIGRATION_3_4 = object : Migration(3, 4) {
             override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("ALTER TABLE reservas ADD COLUMN imagenUrl TEXT NOT NULL DEFAULT ''")
-                database.execSQL("ALTER TABLE reservas ADD COLUMN ciudad TEXT NOT NULL DEFAULT ''")
+                database.execSQL(
+                    "ALTER TABLE reservas ADD COLUMN imagenUrl TEXT NOT NULL DEFAULT ''"
+                )
+                database.execSQL(
+                    "ALTER TABLE reservas ADD COLUMN ciudad TEXT NOT NULL DEFAULT ''"
+                )
             }
         }
 
         val MIGRATION_4_5 = object : Migration(4, 5) {
             override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("ALTER TABLE reservas ADD COLUMN motivoRechazo TEXT NOT NULL DEFAULT ''")
+                database.execSQL(
+                    "ALTER TABLE reservas ADD COLUMN motivoRechazo TEXT NOT NULL DEFAULT ''"
+                )
             }
         }
 
         val MIGRATION_5_6 = object : Migration(5, 6) {
             override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("ALTER TABLE hoteles ADD COLUMN activo INTEGER NOT NULL DEFAULT 1")
+                database.execSQL(
+                    "ALTER TABLE hoteles ADD COLUMN activo INTEGER NOT NULL DEFAULT 1"
+                )
+            }
+        }
+
+        val MIGRATION_6_7 = object : Migration(6, 7) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL(
+                    "ALTER TABLE hoteles ADD COLUMN remoteId TEXT"
+                )
             }
         }
 
@@ -75,9 +99,11 @@ abstract class AppDatabase : RoomDatabase() {
                         MIGRATION_2_3,
                         MIGRATION_3_4,
                         MIGRATION_4_5,
-                        MIGRATION_5_6
+                        MIGRATION_5_6,
+                        MIGRATION_6_7
                     )
                     .build()
+
                 INSTANCE = instance
                 instance
             }

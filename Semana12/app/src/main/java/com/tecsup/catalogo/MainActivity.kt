@@ -1,3 +1,4 @@
+
 package com.tecsup.catalogo
 
 import android.Manifest
@@ -20,6 +21,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tecsup.catalogo.domain.model.Rol
+import com.tecsup.catalogo.ui.admin.AdminHotelesScreen
+import com.tecsup.catalogo.ui.admin.AdminHotelesViewModel
+import com.tecsup.catalogo.ui.admin.AdminReservasScreen
+import com.tecsup.catalogo.ui.admin.AdminReservasViewModel
 import com.tecsup.catalogo.ui.admin.AdminScreen
 import com.tecsup.catalogo.ui.admin.AdminViewModel
 import com.tecsup.catalogo.ui.auth.AuthViewModel
@@ -29,16 +34,18 @@ import com.tecsup.catalogo.ui.detalle.DetalleScreen
 import com.tecsup.catalogo.ui.detalle.DetalleViewModel
 import com.tecsup.catalogo.ui.lista.ListaScreen
 import com.tecsup.catalogo.ui.lista.ListaViewModel
+import com.tecsup.catalogo.ui.reservas.MisReservasScreen
+import com.tecsup.catalogo.ui.reservas.MisReservasViewModel
 import com.tecsup.catalogo.ui.theme.CatalogoTheme
 
 class MainActivity : ComponentActivity() {
 
-    // Si el usuario niega el permiso, la app funciona normal pero sin avisos
     private val pedirPermisoNotificaciones =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             pedirPermisoNotificaciones.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
@@ -58,16 +65,18 @@ class MainActivity : ComponentActivity() {
                 ) {
                     val sesionLista by authViewModel.sesionLista.collectAsState()
                     val sesionActual by authViewModel.sesion.collectAsState()
-                    var verAdminDirecto by rememberSaveable { mutableStateOf(false) }
+
                     var hotelDetalleId by rememberSaveable { mutableStateOf<Int?>(null) }
+                    var verMisReservas by rememberSaveable { mutableStateOf(false) }
+                    var verAdminReservas by rememberSaveable { mutableStateOf(false) }
+                    var verAdminHoteles by rememberSaveable { mutableStateOf(false) }
+                    var verCatalogoAdmin by rememberSaveable { mutableStateOf(false) }
 
                     val sesion = sesionActual
 
                     when {
-                        // Comprobando si ya había una sesión guardada
                         !sesionLista -> Cargando()
 
-                        // Sin sesión: login
                         sesion == null -> LoginScreen(
                             viewModel = authViewModel,
                             onLoginSuccess = { }
@@ -75,47 +84,146 @@ class MainActivity : ComponentActivity() {
 
                         else -> {
                             val isAdmin = sesion.rol == Rol.ADMIN
-                            val detalleId = hotelDetalleId
 
-                            // El botón "atrás" cierra el detalle
-                            BackHandler(enabled = detalleId != null) { hotelDetalleId = null }
+                            if (!isAdmin) {
+                                verAdminReservas = false
+                                verAdminHoteles = false
+                                verCatalogoAdmin = false
+                            }
 
-                            if (detalleId != null) {
-                                val detalleViewModel: DetalleViewModel = viewModel(
-                                    key = "detalle_$detalleId",
-                                    factory = object : ViewModelProvider.Factory {
-                                        @Suppress("UNCHECKED_CAST")
-                                        override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                                            return DetalleViewModel(container.hotelRepository, detalleId) as T
+                            BackHandler(
+                                enabled = hotelDetalleId != null ||
+                                        verMisReservas ||
+                                        verAdminReservas ||
+                                        verAdminHoteles ||
+                                        (isAdmin && verCatalogoAdmin)
+                            ) {
+                                when {
+                                    hotelDetalleId != null -> hotelDetalleId = null
+                                    verMisReservas -> verMisReservas = false
+                                    verAdminReservas -> verAdminReservas = false
+                                    verAdminHoteles -> verAdminHoteles = false
+                                    isAdmin && verCatalogoAdmin -> verCatalogoAdmin = false
+                                }
+                            }
+
+                            when {
+                                hotelDetalleId != null -> {
+                                    val detalleId = hotelDetalleId!!
+
+                                    val detalleViewModel: DetalleViewModel = viewModel(
+                                        key = "detalle_$detalleId",
+                                        factory = object : ViewModelProvider.Factory {
+                                            @Suppress("UNCHECKED_CAST")
+                                            override fun <T : ViewModel> create(
+                                                modelClass: Class<T>
+                                            ): T {
+                                                return DetalleViewModel(
+                                                    container.hotelRepository,
+                                                    container.reservaRepository,
+                                                    container.authRepository,
+                                                    detalleId
+                                                ) as T
+                                            }
                                         }
-                                    }
-                                )
-                                DetalleScreen(
-                                    viewModel = detalleViewModel,
-                                    onVolver = { hotelDetalleId = null }
-                                )
-                            } else if (isAdmin && verAdminDirecto) {
-                                AdminScreen(
-                                    viewModel = adminViewModel,
-                                    userEmail = sesion.correo,
-                                    onVolverAlCatalogo = { verAdminDirecto = false },
-                                    onCerrarSesion = {
-                                        verAdminDirecto = false
-                                        authViewModel.logout()
-                                    }
-                                )
-                            } else {
-                                ListaScreen(
-                                    viewModel = listaViewModel,
-                                    userEmail = sesion.correo,
-                                    isAdmin = isAdmin,
-                                    onHotelClick = { hotelDetalleId = it },
-                                    onIrAlAdmin = { verAdminDirecto = true },
-                                    onCerrarSesion = {
-                                        hotelDetalleId = null
-                                        authViewModel.logout()
-                                    }
-                                )
+                                    )
+
+                                    DetalleScreen(
+                                        viewModel = detalleViewModel,
+                                        isAdmin = isAdmin,
+                                        onVolver = { hotelDetalleId = null }
+                                    )
+                                }
+
+                                verMisReservas && !isAdmin -> {
+                                    val vm: MisReservasViewModel =
+                                        viewModel(factory = factory)
+
+                                    MisReservasScreen(
+                                        viewModel = vm,
+                                        onVolver = { verMisReservas = false }
+                                    )
+                                }
+
+                                isAdmin && verAdminReservas -> {
+                                    val vm: AdminReservasViewModel =
+                                        viewModel(factory = factory)
+
+                                    AdminReservasScreen(
+                                        viewModel = vm,
+                                        onVolver = { verAdminReservas = false }
+                                    )
+                                }
+
+                                isAdmin && verAdminHoteles -> {
+                                    val vm: AdminHotelesViewModel =
+                                        viewModel(factory = factory)
+
+                                    AdminHotelesScreen(
+                                        viewModel = vm,
+                                        onVolver = { verAdminHoteles = false }
+                                    )
+                                }
+
+                                isAdmin && verCatalogoAdmin -> {
+                                    ListaScreen(
+                                        viewModel = listaViewModel,
+                                        userEmail = sesion.correo,
+                                        isAdmin = true,
+                                        onHotelClick = { hotelDetalleId = it },
+                                        onIrAlAdmin = { verCatalogoAdmin = false },
+                                        onCerrarSesion = {
+                                            hotelDetalleId = null
+                                            verCatalogoAdmin = false
+                                            verAdminReservas = false
+                                            verAdminHoteles = false
+                                            authViewModel.logout()
+                                        },
+                                        onVerMisReservas = { }
+                                    )
+                                }
+
+                                isAdmin -> {
+                                    AdminScreen(
+                                        viewModel = adminViewModel,
+                                        userEmail = sesion.correo,
+                                        onVolverAlCatalogo = {
+                                            verCatalogoAdmin = true
+                                        },
+                                        onVerAdminReservas = {
+                                            verAdminReservas = true
+                                        },
+                                        onVerAdminHoteles = {
+                                            verAdminHoteles = true
+                                        },
+                                        onCerrarSesion = {
+                                            hotelDetalleId = null
+                                            verMisReservas = false
+                                            verAdminReservas = false
+                                            verAdminHoteles = false
+                                            verCatalogoAdmin = false
+                                            authViewModel.logout()
+                                        }
+                                    )
+                                }
+
+                                else -> {
+                                    ListaScreen(
+                                        viewModel = listaViewModel,
+                                        userEmail = sesion.correo,
+                                        isAdmin = false,
+                                        onHotelClick = { hotelDetalleId = it },
+                                        onIrAlAdmin = { },
+                                        onCerrarSesion = {
+                                            hotelDetalleId = null
+                                            verMisReservas = false
+                                            authViewModel.logout()
+                                        },
+                                        onVerMisReservas = {
+                                            verMisReservas = true
+                                        }
+                                    )
+                                }
                             }
                         }
                     }

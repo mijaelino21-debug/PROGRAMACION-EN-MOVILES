@@ -19,32 +19,50 @@ data class HotelDto(
 )
 
 fun HotelDto.toDomain(): Hotel {
-    val defaultServicios = listOf("Wi-Fi gratis", "Piscina", "Aire acondicionado", "Restaurante", "Recepción 24/7")
+    val defaultServicios = listOf(
+        "Wi-Fi gratis",
+        "Piscina",
+        "Aire acondicionado",
+        "Restaurante",
+        "Recepción 24/7"
+    )
+
     return Hotel(
-        id = id?.toIntOrNull() ?: 0,
+        id = 0,
         nombre = nombre ?: "Sin nombre",
         descripcion = descripcion ?: "Sin descripción",
         ciudad = ciudad ?: "Sin ubicación",
         precioNoche = precioNoche ?: 0.0,
         estrellas = estrellas ?: 1,
-        imagenUrl = if (!imagenUrl.isNullOrEmpty()) imagenUrl else "https://picsum.photos/300/200",
+        imagenUrl = imagenUrl?.takeIf { it.isNotBlank() }
+            ?: "https://picsum.photos/300/200",
         esFavorito = false,
-        servicios = if (servicios.isNullOrEmpty()) defaultServicios else servicios,
-        activo = activo ?: true
+        servicios = servicios?.takeIf { it.isNotEmpty() } ?: defaultServicios,
+        activo = activo ?: true,
+        remoteId = id
     )
 }
 
 fun HotelDto.toEntity(esFavorito: Boolean = false): HotelEntity {
-    val defaultServicios = listOf("Wi-Fi gratis", "Piscina", "Aire acondicionado", "Restaurante", "Recepción 24/7")
-    val servList = if (servicios.isNullOrEmpty()) defaultServicios else servicios
+    val defaultServicios = listOf(
+        "Wi-Fi gratis",
+        "Piscina",
+        "Aire acondicionado",
+        "Restaurante",
+        "Recepción 24/7"
+    )
+
+    val servList = servicios?.takeIf { it.isNotEmpty() } ?: defaultServicios
+
     return HotelEntity(
-        id = id?.toIntOrNull() ?: 0,
+        remoteId = id,
         nombre = nombre ?: "Sin nombre",
         descripcion = descripcion ?: "Sin descripción",
         ciudad = ciudad ?: "Sin ubicación",
         precioNoche = precioNoche ?: 0.0,
         estrellas = estrellas ?: 1,
-        imagenUrl = if (!imagenUrl.isNullOrEmpty()) imagenUrl else "https://picsum.photos/300/200",
+        imagenUrl = imagenUrl?.takeIf { it.isNotBlank() }
+            ?: "https://picsum.photos/300/200",
         esFavorito = esFavorito,
         servicios = servList.joinToString(","),
         activo = activo ?: true

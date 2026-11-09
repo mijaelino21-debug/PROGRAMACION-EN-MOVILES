@@ -1,23 +1,13 @@
 package com.tecsup.catalogo.data.mapper
 
-import com.tecsup.catalogo.data.dto.HotelDto
 import com.tecsup.catalogo.data.local.HotelEntity
+import com.tecsup.catalogo.data.local.ReservaEntity
 import com.tecsup.catalogo.domain.model.Hotel
-
-fun HotelDto.toEntity(esFavorito: Boolean = false): HotelEntity {
-    return HotelEntity(
-        id = id?.toIntOrNull() ?: 0,
-        nombre = nombre ?: "Sin nombre",
-        descripcion = descripcion ?: "Sin descripción",
-        ciudad = ciudad ?: "Sin ubicación",
-        precioNoche = precioNoche ?: 0.0,
-        estrellas = estrellas ?: 1,
-        imagenUrl = if (!imagenUrl.isNullOrEmpty()) imagenUrl else "https://picsum.photos/300/200",
-        esFavorito = esFavorito
-    )
-}
+import com.tecsup.catalogo.domain.model.Reserva
 
 fun HotelEntity.toDomain(): Hotel {
+    val defaultServicios = listOf("Wi-Fi gratis", "Piscina", "Aire acondicionado", "Restaurante", "Recepción 24/7")
+    val servList = if (servicios.isBlank()) defaultServicios else servicios.split(",").map { it.trim() }.filter { it.isNotEmpty() }
     return Hotel(
         id = id,
         nombre = nombre,
@@ -26,6 +16,43 @@ fun HotelEntity.toDomain(): Hotel {
         precioNoche = precioNoche,
         estrellas = estrellas,
         imagenUrl = imagenUrl,
-        esFavorito = esFavorito
+        esFavorito = esFavorito,
+        servicios = servList
     )
 }
+
+fun ReservaEntity.toDomain() = Reserva(
+    id = id,
+    usuarioId = usuarioId,
+    hotelId = hotelId,
+    nombreHotel = nombreHotel,
+    imagenUrl = imagenUrl,
+    ciudad = ciudad,
+    fechaEntrada = fechaEntrada,
+    fechaSalida = fechaSalida,
+    cantidadHuespedes = cantidadHuespedes,
+    precioPorNoche = precioPorNoche,
+    cantidadNoches = cantidadNoches,
+    precioTotal = precioTotal,
+    estado = estado,
+    motivoRechazo = motivoRechazo,
+    fechaCreacion = fechaCreacion
+)
+
+fun Reserva.toEntity() = ReservaEntity(
+    id = id,
+    usuarioId = usuarioId,
+    hotelId = hotelId,
+    nombreHotel = nombreHotel,
+    imagenUrl = imagenUrl,
+    ciudad = ciudad,
+    fechaEntrada = fechaEntrada,
+    fechaSalida = fechaSalida,
+    cantidadHuespedes = cantidadHuespedes,
+    precioPorNoche = precioPorNoche,
+    cantidadNoches = cantidadNoches,
+    precioTotal = precioTotal,
+    estado = estado,
+    motivoRechazo = motivoRechazo,
+    fechaCreacion = fechaCreacion
+)
