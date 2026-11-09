@@ -28,7 +28,8 @@ private fun hotel(id: Int, favorito: Boolean = false) = Hotel(
     precioNoche = 100.0,
     estrellas = 3,
     imagenUrl = "https://example.com/$id.jpg",
-    esFavorito = favorito
+    esFavorito = favorito,
+    activo = true
 )
 
 /** Repositorio falso: todo en memoria, sin Retrofit ni Room. */
@@ -44,6 +45,8 @@ class FakeHotelRepository : HotelRepository {
     }
 
     override val items: Flow<List<Hotel>> = guardados
+    override val hotelesActivos: Flow<List<Hotel>> =
+        guardados.map { lista -> lista.filter { it.activo } }
     override val favoritos: Flow<List<Hotel>> =
         guardados.map { lista -> lista.filter { it.esFavorito } }
 
@@ -61,6 +64,26 @@ class FakeHotelRepository : HotelRepository {
         guardados.value = guardados.value.map {
             if (it.id == id) it.copy(esFavorito = !it.esFavorito) else it
         }
+    }
+
+    override suspend fun agregarHotel(hotel: Hotel): Result<Unit> {
+        guardados.value = guardados.value + hotel
+        return Result.success(Unit)
+    }
+
+    override suspend fun actualizarHotel(hotel: Hotel): Result<Unit> {
+        guardados.value = guardados.value.map { if (it.id == hotel.id) hotel else it }
+        return Result.success(Unit)
+    }
+
+    override suspend fun eliminarHotel(id: Int): Result<Unit> {
+        guardados.value = guardados.value.filter { it.id != id }
+        return Result.success(Unit)
+    }
+
+    override suspend fun cambiarEstadoHotel(id: Int, activo: Boolean): Result<Unit> {
+        guardados.value = guardados.value.map { if (it.id == id) it.copy(activo = activo) else it }
+        return Result.success(Unit)
     }
 
     override suspend fun cantidadGuardada(): Int = guardados.value.size
