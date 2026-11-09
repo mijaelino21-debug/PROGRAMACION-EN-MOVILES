@@ -8,5 +8,7 @@ data class Hotel(
     val precioNoche: Double,
     val estrellas: Int,
     val imagenUrl: String,
-    val esFavorito: Boolean = false
+    val esFavorito: Boolean = false,
+    val servicios: List<String> = listOf("Wi-Fi gratis", "Piscina", "Aire acondicionado", "Restaurante", "Recepción 24/7"),
+    val activo: Boolean = true
 )
