@@ -46,4 +46,10 @@ interface HotelDao {
 
     @Query("DELETE FROM hoteles")
     suspend fun borrarTodo()
+
+    @Query("SELECT * FROM hoteles")
+    suspend fun listarTodos(): List<HotelEntity>
+
+    @Query("DELETE FROM hoteles WHERE id IN (:ids)")
+    suspend fun eliminarPorIds(ids: List<Int>)
 }

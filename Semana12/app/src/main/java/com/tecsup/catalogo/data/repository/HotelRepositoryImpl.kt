@@ -31,14 +31,55 @@ class HotelRepositoryImpl(
     override val favoritos: Flow<List<Hotel>> =
         hotelDao.favoritos().map { list -> list.map { it.toHotel() } }
 
+    // ---------------------------------------------------------------
+    // Sincronización: Room es la fuente de verdad, MockAPI la actualiza
+    // ---------------------------------------------------------------
     override suspend fun refrescar(): Result<Int> {
         return try {
+            // Si MockAPI tiene copias (mismo nombre y ciudad), nos quedamos con la de id más bajo
             val remotos: List<HotelDto> = apiService.getHoteles()
-            val idsFavs = hotelDao.idsFavoritos().toSet()
+                .sortedBy { it.id?.toIntOrNull() ?: Int.MAX_VALUE }
+                .distinctBy { "${it.nombre}|${it.ciudad}" }
 
+            // Para reparar filas viejas sin remoteId: nombre+ciudad -> id remoto
+            val remotoPorNombre = HashMap<String, String>()
+            remotos.forEach { dto ->
+                val id = dto.id ?: return@forEach
+                remotoPorNombre.putIfAbsent("${dto.nombre}|${dto.ciudad}", id)
+            }
+            val idsRemotos = remotos.mapNotNull { it.id }.toSet()
+
+            // 1) Agrupar filas locales por hotel remoto y borrar las repetidas
+            val existentes = hotelDao.listarTodos()
+            val conservar = HashMap<String, HotelEntity>()
+            val sobrantes = mutableListOf<Int>()
+            existentes
+                .groupBy { it.remoteId ?: remotoPorNombre["${it.nombre}|${it.ciudad}"] }
+                .forEach { (clave, lista) ->
+                    if (clave == null) return@forEach // hotel solo local: no se toca
+                    val keep = lista.firstOrNull { it.esFavorito } ?: lista.minBy { it.id }
+                    conservar[clave] = keep
+                    lista.filter { it.id != keep.id }.forEach { sobrantes.add(it.id) }
+                }
+
+            // Filas con remoteId que ya no existe en el servidor (copias o borrados)
+            existentes
+                .filter { it.remoteId != null && it.remoteId !in idsRemotos }
+                .forEach { sobrantes.add(it.id) }
+
+            if (sobrantes.isNotEmpty()) hotelDao.eliminarPorIds(sobrantes.distinct())
+
+            // 2) Actualizar los existentes (mismo id local) y agregar los nuevos
             val entidades = remotos.map { dto ->
-                val idInt = dto.id?.toIntOrNull() ?: 0
-                dto.toEntity(esFavorito = idInt in idsFavs)
+                val base = dto.toEntity()
+                val previo = dto.id?.let { conservar[it] }
+                if (previo != null) {
+                    base.copy(
+                        id = previo.id,
+                        esFavorito = previo.esFavorito,
+                        activo = previo.activo
+                    )
+                } else base
             }
             hotelDao.guardarTodos(entidades)
             Result.success(entidades.size)
@@ -50,15 +91,26 @@ class HotelRepositoryImpl(
         }
     }
 
+    // ---------------------------------------------------------------
+    // Detalle (segundo endpoint: GET hoteles/{id})
+    // ---------------------------------------------------------------
     override suspend fun obtenerDetalle(id: Int): Result<Hotel> {
+        val local = hotelDao.porId(id)
         return try {
-            val dto = apiService.getHotel(id.toString())
-            val esFav = id in hotelDao.idsFavoritos()
-            Result.success(dto.toDomain().copy(esFavorito = esFav))
+            val remoteId = local?.remoteId ?: id.toString()
+            val dto = apiService.getHotel(remoteId)
+            val esFav = local?.esFavorito ?: false
+            Result.success(
+                dto.toDomain().copy(
+                    id = id,
+                    esFavorito = esFav,
+                    activo = local?.activo ?: (dto.activo ?: true)
+                )
+            )
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            val local = hotelDao.porId(id)
+            // Sin internet: usamos lo guardado en Room
             if (local != null) Result.success(local.toHotel()) else Result.failure(e)
         }
     }
@@ -67,41 +119,22 @@ class HotelRepositoryImpl(
         hotelDao.alternarFavorito(id)
     }
 
+    // ---------------------------------------------------------------
+    // Administración de hoteles
+    // ---------------------------------------------------------------
     override suspend fun agregarHotel(hotel: Hotel): Result<Unit> {
         return try {
-            val dto = HotelDto(
-                id = if (hotel.id > 0) hotel.id.toString() else null,
-                nombre = hotel.nombre,
-                descripcion = hotel.descripcion,
-                ciudad = hotel.ciudad,
-                precioNoche = hotel.precioNoche,
-                estrellas = hotel.estrellas,
-                imagenUrl = hotel.imagenUrl,
-                servicios = hotel.servicios,
-                activo = hotel.activo
-            )
+            val dto = hotel.toDto(remoteId = null)
             Log.d(TAG, "POST /hoteles -> $dto")
             val created = apiService.crearHotel(dto)
-            Log.d(TAG, "POST /hoteles RESP -> $created")
-            val entity = created.toEntity(esFavorito = false)
-            hotelDao.insertarOActualizar(entity)
+            hotelDao.insertarOActualizar(created.toEntity(esFavorito = false))
             Result.success(Unit)
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             Log.e(TAG, "Error en agregarHotel remoto, guardando local", e)
             try {
-                val entity = HotelEntity(
-                    id = if (hotel.id > 0) hotel.id else (System.currentTimeMillis() % 100000).toInt(),
-                    nombre = hotel.nombre,
-                    descripcion = hotel.descripcion,
-                    ciudad = hotel.ciudad,
-                    precioNoche = hotel.precioNoche,
-                    estrellas = hotel.estrellas,
-                    imagenUrl = hotel.imagenUrl,
-                    servicios = hotel.servicios.joinToString(","),
-                    activo = hotel.activo,
-                    esFavorito = false
-                )
-                hotelDao.insertarOActualizar(entity)
+                hotelDao.insertarOActualizar(hotel.toEntity(esFavorito = false, remoteId = null).copy(id = 0))
                 Result.success(Unit)
             } catch (ex: Exception) {
                 Result.failure(ex)
@@ -111,64 +144,45 @@ class HotelRepositoryImpl(
 
     override suspend fun actualizarHotel(hotel: Hotel): Result<Unit> {
         return try {
-            val dto = HotelDto(
-                id = hotel.id.toString(),
-                nombre = hotel.nombre,
-                descripcion = hotel.descripcion,
-                ciudad = hotel.ciudad,
-                precioNoche = hotel.precioNoche,
-                estrellas = hotel.estrellas,
-                imagenUrl = hotel.imagenUrl,
-                servicios = hotel.servicios,
-                activo = hotel.activo
+            val previo = hotelDao.porId(hotel.id)
+            val local = hotel.toEntity(
+                esFavorito = previo?.esFavorito ?: false,
+                remoteId = previo?.remoteId
             )
-            Log.d(TAG, "PUT /hoteles/${hotel.id} -> $dto")
+            // Se guarda primero en Room (la app funciona aunque no haya internet)
+            hotelDao.insertarOActualizar(local)
             try {
-                val res = apiService.actualizarHotel(hotel.id.toString(), dto)
-                Log.d(TAG, "PUT /hoteles/${hotel.id} RESP (200 OK) -> $res")
-            } catch (e: HttpException) {
-                Log.e(TAG, "PUT /hoteles/${hotel.id} HTTP ${e.code()}: ${e.response()?.errorBody()?.string()}", e)
-                if (e.code() == 404) {
-                    Log.w(TAG, "ID ${hotel.id} devolvio 404 en MockAPI, creando nuevo recurso remoto...")
-                    val created = apiService.crearHotel(dto)
-                    val newIdInt = created.id?.toIntOrNull() ?: 0
-                    if (newIdInt > 0 && newIdInt != hotel.id) {
-                        hotelDao.eliminarPorId(hotel.id)
-                    }
-                    val newEntity = created.toEntity(esFavorito = hotel.esFavorito)
-                    hotelDao.insertarOActualizar(newEntity)
-                    return Result.success(Unit)
-                } else {
-                    throw e
-                }
+                subirARemoto(local)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Log.e(TAG, "No se pudo actualizar en MockAPI; queda guardado local", e)
             }
-
-            val entity = hotelDao.porId(hotel.id)
-            val esFav = entity?.esFavorito ?: false
-            hotelDao.insertarOActualizar(hotel.toEntity(esFav))
             Result.success(Unit)
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
-            try {
-                val entity = hotelDao.porId(hotel.id)
-                val esFav = entity?.esFavorito ?: false
-                hotelDao.insertarOActualizar(hotel.toEntity(esFav))
-                Result.success(Unit)
-            } catch (ex: Exception) {
-                Result.failure(ex)
-            }
+            Result.failure(e)
         }
     }
 
     override suspend fun eliminarHotel(id: Int): Result<Unit> {
         return try {
-            try {
-                Log.d(TAG, "DELETE /hoteles/$id")
-                apiService.eliminarHotel(id.toString())
-            } catch (e: Exception) {
-                Log.e(TAG, "Error eliminando hotel $id en MockAPI", e)
+            val remoteId = hotelDao.porId(id)?.remoteId
+            if (remoteId != null) {
+                try {
+                    Log.d(TAG, "DELETE /hoteles/$remoteId")
+                    apiService.eliminarHotel(remoteId)
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error eliminando hotel $remoteId en MockAPI", e)
+                }
             }
             hotelDao.eliminarPorId(id)
             Result.success(Unit)
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -176,61 +190,19 @@ class HotelRepositoryImpl(
 
     override suspend fun cambiarEstadoHotel(id: Int, activo: Boolean): Result<Unit> {
         return try {
+            hotelDao.porId(id) ?: return Result.failure(Exception("Hotel no encontrado"))
             hotelDao.actualizarEstado(id, activo)
-            val entity = hotelDao.porId(id) ?: return Result.failure(Exception("Hotel no encontrado"))
-
-            val serviciosList = entity.servicios.split(",").map { it.trim() }.filter { it.isNotEmpty() }
-            val dto = HotelDto(
-                id = id.toString(),
-                nombre = entity.nombre,
-                descripcion = entity.descripcion,
-                ciudad = entity.ciudad,
-                precioNoche = entity.precioNoche,
-                estrellas = entity.estrellas,
-                imagenUrl = entity.imagenUrl,
-                servicios = serviciosList,
-                activo = activo
-            )
-
-            Log.d(TAG, "PUT /hoteles/$id [cambiarEstado] -> $dto")
-            try {
-                val res = apiService.actualizarHotel(id.toString(), dto)
-                Log.d(TAG, "PUT /hoteles/$id [cambiarEstado] RESP (200 OK) -> $res")
-                Result.success(Unit)
-            } catch (e: HttpException) {
-                val errBody = e.response()?.errorBody()?.string() ?: ""
-                Log.e(TAG, "PUT /hoteles/$id [cambiarEstado] HTTP ${e.code()}: $errBody", e)
-                if (e.code() == 404) {
-                    Log.w(TAG, "Hotel $id dio 404 en MockAPI al actualizar estado. Registrando en MockAPI...")
-                    try {
-                        val created = apiService.crearHotel(dto)
-                        Log.d(TAG, "Hotel $id recreado exitosamente en MockAPI con nuevo id: '${created.id}'")
-                        val newIdInt = created.id?.toIntOrNull() ?: 0
-                        if (newIdInt > 0 && newIdInt != id) {
-                            hotelDao.eliminarPorId(id)
-                        }
-                        val newEntity = created.toEntity(esFavorito = entity.esFavorito)
-                        hotelDao.insertarOActualizar(newEntity)
-                        Result.success(Unit)
-                    } catch (createEx: Exception) {
-                        Log.e(TAG, "Error registrando hotel $id en MockAPI tras 404", createEx)
-                        hotelDao.actualizarEstado(id, !activo)
-                        Result.failure(createEx)
-                    }
-                } else {
-                    hotelDao.actualizarEstado(id, !activo)
-                    Result.failure(e)
-                }
-            } catch (e: Exception) {
-                Log.e(TAG, "Excepcion no HTTP en PUT /hoteles/$id: ${e.message}", e)
-                hotelDao.actualizarEstado(id, !activo)
-                Result.failure(e)
-            }
+            Result.success(Unit)
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             Result.failure(e)
         }
     }
 
+    // ---------------------------------------------------------------
+    // Estadísticas y caché
+    // ---------------------------------------------------------------
     override suspend fun cantidadGuardada(): Int = hotelDao.contar()
 
     override suspend fun cantidadFavoritos(): Int = hotelDao.contarFavoritos()
@@ -238,6 +210,49 @@ class HotelRepositoryImpl(
     override suspend fun limpiarCache() {
         hotelDao.borrarTodo()
     }
+
+    // ---------------------------------------------------------------
+    // Auxiliares
+    // ---------------------------------------------------------------
+
+    /** Sube el hotel a MockAPI: PUT si ya tiene remoteId; POST si no existe (o dio 404). */
+    private suspend fun subirARemoto(local: HotelEntity) {
+        val remoteId = local.remoteId
+        val resultado: HotelDto = if (remoteId == null) {
+            apiService.crearHotel(local.toDto(remoteId = null))
+        } else {
+            try {
+                apiService.actualizarHotel(remoteId, local.toDto(remoteId))
+            } catch (e: HttpException) {
+                if (e.code() == 404) apiService.crearHotel(local.toDto(remoteId = null)) else throw e
+            }
+        }
+        hotelDao.insertarOActualizar(local.copy(remoteId = resultado.id ?: remoteId))
+    }
+
+    private fun HotelEntity.toDto(remoteId: String?): HotelDto = HotelDto(
+        id = remoteId,
+        nombre = nombre,
+        descripcion = descripcion,
+        ciudad = ciudad,
+        precioNoche = precioNoche,
+        estrellas = estrellas,
+        imagenUrl = imagenUrl,
+        servicios = servicios.split(",").map { it.trim() }.filter { it.isNotEmpty() },
+        activo = activo
+    )
+
+    private fun Hotel.toDto(remoteId: String?): HotelDto = HotelDto(
+        id = remoteId,
+        nombre = nombre,
+        descripcion = descripcion,
+        ciudad = ciudad,
+        precioNoche = precioNoche,
+        estrellas = estrellas,
+        imagenUrl = imagenUrl,
+        servicios = servicios,
+        activo = activo
+    )
 
     private fun HotelEntity.toHotel(): Hotel {
         return Hotel(
@@ -250,13 +265,15 @@ class HotelRepositoryImpl(
             imagenUrl = imagenUrl,
             esFavorito = esFavorito,
             servicios = servicios.split(",").map { it.trim() }.filter { it.isNotEmpty() },
-            activo = activo
+            activo = activo,
+            remoteId = remoteId
         )
     }
 
-    private fun Hotel.toEntity(esFavorito: Boolean): HotelEntity {
+    private fun Hotel.toEntity(esFavorito: Boolean, remoteId: String?): HotelEntity {
         return HotelEntity(
             id = id,
+            remoteId = remoteId,
             nombre = nombre,
             descripcion = descripcion,
             ciudad = ciudad,
