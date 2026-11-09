@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.tecsup.catalogo.domain.model.Reserva
 import com.tecsup.catalogo.ui.UiState
 import com.tecsup.catalogo.ui.admin.components.AdminReservaItemCard
@@ -127,7 +128,15 @@ fun AdminReservasScreen(
                     Tab(
                         selected = selectedTab == index,
                         onClick = { viewModel.onTabSelected(index) },
-                        text = { Text(title, fontWeight = FontWeight.Bold) }
+                        text = {
+                            Text(
+                                title,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 12.sp,
+                                maxLines = 1,
+                                softWrap = false
+                            )
+                        }
                     )
                 }
             }

@@ -20,6 +20,7 @@ import com.tecsup.catalogo.ui.components.Cargando
 import com.tecsup.catalogo.ui.components.ErrorView
 import com.tecsup.catalogo.ui.reservas.components.DetalleReservaDialog
 import com.tecsup.catalogo.ui.reservas.components.ItemReservaCard
+import androidx.compose.ui.unit.sp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -103,7 +104,7 @@ fun MisReservasScreen(
                     Tab(
                         selected = selectedTab == index,
                         onClick = { selectedTab = index },
-                        text = { Text(title, fontWeight = FontWeight.Bold) }
+                        text = { Text(title, fontWeight = FontWeight.Bold, fontSize = 12.sp, maxLines = 1, softWrap = false) }
                     )
                 }
             }

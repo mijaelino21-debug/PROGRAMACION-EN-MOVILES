@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -47,39 +47,42 @@ class AdminReservasViewModel(
     }
 
     val estado: StateFlow<UiState<List<Reserva>>> =
-        reservaRepository.obtenerTodas()
-            .map<List<Reserva>, UiState<List<Reserva>>> { list ->
-                val query = _searchQuery.value.trim().lowercase()
-                val tab = _selectedTab.value
-                val sort = _sortOrder.value
+        combine(
+            reservaRepository.obtenerTodas(),
+            _searchQuery,
+            _selectedTab,
+            _sortOrder
+        ) { list, queryRaw, tab, sort ->
+            val query = queryRaw.trim().lowercase()
 
-                // Filtrar por pestañas
-                val filtradasTab = when (tab) {
-                    1 -> list.filter { it.estado == "PENDIENTE" }
-                    2 -> list.filter { it.estado == "CONFIRMADA" }
-                    3 -> list.filter { it.estado == "RECHAZADA" || it.estado == "CANCELADA" }
-                    else -> list
-                }
-
-                // Filtrar por buscador (nombre hotel o id de reserva)
-                val filtradasBusqueda = if (query.isEmpty()) {
-                    filtradasTab
-                } else {
-                    filtradasTab.filter {
-                        it.nombreHotel.lowercase().contains(query) ||
-                        it.id.toString().contains(query) ||
-                        it.ciudad.lowercase().contains(query)
-                    }
-                }
-
-                // Ordenar
-                val ordenadas = when (sort) {
-                    OrdenReserva.FECHA_SOLICITUD -> filtradasBusqueda.sortedByDescending { it.fechaCreacion }
-                    OrdenReserva.FECHA_ENTRADA -> filtradasBusqueda.sortedBy { it.fechaEntrada }
-                }
-
-                UiState.Exito(ordenadas)
+            // Filtrar por pestañas
+            val filtradasTab = when (tab) {
+                1 -> list.filter { it.estado == "PENDIENTE" }
+                2 -> list.filter { it.estado == "CONFIRMADA" }
+                3 -> list.filter { it.estado == "RECHAZADA" || it.estado == "CANCELADA" }
+                else -> list
             }
+
+            // Filtrar por buscador (hotel, ciudad o id de reserva)
+            val filtradasBusqueda = if (query.isEmpty()) {
+                filtradasTab
+            } else {
+                val idQuery = query.removePrefix("#")
+                filtradasTab.filter {
+                    it.nombreHotel.lowercase().contains(query) ||
+                            it.ciudad.lowercase().contains(query) ||
+                            it.id.toString().contains(idQuery)
+                }
+            }
+
+            // Ordenar
+            val ordenadas = when (sort) {
+                OrdenReserva.FECHA_SOLICITUD -> filtradasBusqueda.sortedByDescending { it.fechaCreacion }
+                OrdenReserva.FECHA_ENTRADA -> filtradasBusqueda.sortedBy { it.fechaEntrada }
+            }
+
+            UiState.Exito(ordenadas) as UiState<List<Reserva>>
+        }
             .catch { emit(UiState.Error(it.localizedMessage ?: "Error al cargar reservas")) }
             .stateIn(
                 scope = viewModelScope,
