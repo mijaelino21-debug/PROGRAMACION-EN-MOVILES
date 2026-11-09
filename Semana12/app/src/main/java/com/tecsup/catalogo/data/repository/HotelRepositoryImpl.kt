@@ -198,7 +198,9 @@ class HotelRepositoryImpl(
         } catch (e: Exception) {
             Result.failure(e)
         }
-    }
+    }git add -A .
+    git commit -m "chore: eliminar prueba de ejemplo sin uso"
+    git push
 
     // ---------------------------------------------------------------
     // Estadísticas y caché
