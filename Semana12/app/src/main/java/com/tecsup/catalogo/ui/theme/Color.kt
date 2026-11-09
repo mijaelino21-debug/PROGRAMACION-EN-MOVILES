@@ -2,40 +2,48 @@ package com.tecsup.catalogo.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Light Theme Colors (Blue & Turquoise / Neutral)
-val PrimaryLight = Color(0xFF0284C7)
+// Paleta expresiva y vibrante sugerida
+val PetroleumBlue = Color(0xFF176B87)
+val Turquoise = Color(0xFF36A6C5)
+val OrangeAcc = Color(0xFFFF9F43)
+val YellowAcc = Color(0xFFF4C95D)
+val CoralAcc = Color(0xFFE76F8A)
+val VioletAcc = Color(0xFF7656C8)
+
+// Light Theme Colors
+val PrimaryLight = PetroleumBlue
 val OnPrimaryLight = Color(0xFFFFFFFF)
-val PrimaryContainerLight = Color(0xFFE0F2FE)
-val OnPrimaryContainerLight = Color(0xFF0369A1)
+val PrimaryContainerLight = Color(0xFFD6F0FF)
+val OnPrimaryContainerLight = Color(0xFF001F2A)
 
-val SecondaryLight = Color(0xFF0D9488)
+val SecondaryLight = Turquoise
 val OnSecondaryLight = Color(0xFFFFFFFF)
-val SecondaryContainerLight = Color(0xFFCCFBF1)
-val OnSecondaryContainerLight = Color(0xFF115E59)
+val SecondaryContainerLight = Color(0xFFC8EEFF)
+val OnSecondaryContainerLight = Color(0xFF001F29)
 
-val TertiaryLight = Color(0xFF0EA5E9)
+val TertiaryLight = VioletAcc
 val OnTertiaryLight = Color(0xFFFFFFFF)
 
-val BackgroundLight = Color(0xFFF8FAFC)
-val OnBackgroundLight = Color(0xFF0F172A)
+val BackgroundLight = Color(0xFFF4F8FA)
+val OnBackgroundLight = Color(0xFF101C24)
 val SurfaceLight = Color(0xFFFFFFFF)
-val OnSurfaceLight = Color(0xFF0F172A)
+val OnSurfaceLight = Color(0xFF101C24)
 
-// Dark Theme Colors (Blue & Turquoise / Neutral)
-val PrimaryDark = Color(0xFF38BDF8)
-val OnPrimaryDark = Color(0xFF0C4A6E)
-val PrimaryContainerDark = Color(0xFF0369A1)
-val OnPrimaryContainerDark = Color(0xFFE0F2FE)
+// Dark Theme Colors
+val PrimaryDark = Turquoise
+val OnPrimaryDark = Color(0xFF003544)
+val PrimaryContainerDark = Color(0xFF176B87)
+val OnPrimaryContainerDark = Color(0xFFD6F0FF)
 
-val SecondaryDark = Color(0xFF2DD4BF)
-val OnSecondaryDark = Color(0xFF042F2E)
-val SecondaryContainerDark = Color(0xFF115E59)
-val OnSecondaryContainerDark = Color(0xFFCCFBF1)
+val SecondaryDark = YellowAcc
+val OnSecondaryDark = Color(0xFF3B2E00)
+val SecondaryContainerDark = Color(0xFF564500)
+val OnSecondaryContainerDark = Color(0xFFFFE082)
 
-val TertiaryDark = Color(0xFF7DD3FC)
-val OnTertiaryDark = Color(0xFF082F49)
+val TertiaryDark = CoralAcc
+val OnTertiaryDark = Color(0xFF49001B)
 
-val BackgroundDark = Color(0xFF0F172A)
-val OnBackgroundDark = Color(0xFFF8FAFC)
-val SurfaceDark = Color(0xFF1E293B)
-val OnSurfaceDark = Color(0xFFF8FAFC)
+val BackgroundDark = Color(0xFF0B1318)
+val OnBackgroundDark = Color(0xFFE2E8F0)
+val SurfaceDark = Color(0xFF131D24)
+val OnSurfaceDark = Color(0xFFE2E8F0)

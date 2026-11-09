@@ -44,8 +44,8 @@ private val LightColorScheme = lightColorScheme(
 )
 
 private val AppShapes = Shapes(
-    medium = RoundedCornerShape(12.dp),
-    large = RoundedCornerShape(20.dp)
+    medium = RoundedCornerShape(16.dp),
+    large = RoundedCornerShape(24.dp)
 )
 
 @Composable
