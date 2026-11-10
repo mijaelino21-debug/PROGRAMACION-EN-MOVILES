@@ -8,14 +8,15 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
 @Database(
-    entities = [HotelEntity::class, ReservaEntity::class],
-    version = 7,
+    entities = [HotelEntity::class, ReservaEntity::class, FavoritoEntity::class],
+    version = 8,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun hotelDao(): HotelDao
     abstract fun reservaDao(): ReservaDao
+    abstract fun favoritoDao(): FavoritoDao
 
     companion object {
         @Volatile
@@ -87,6 +88,20 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        val MIGRATION_7_8 = object : Migration(7, 8) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS favoritos (
+                        usuarioId TEXT NOT NULL,
+                        hotelId INTEGER NOT NULL,
+                        PRIMARY KEY(usuarioId, hotelId)
+                    )
+                    """.trimIndent()
+                )
+            }
+        }
+
         fun obtenerBaseDatos(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -100,7 +115,8 @@ abstract class AppDatabase : RoomDatabase() {
                         MIGRATION_3_4,
                         MIGRATION_4_5,
                         MIGRATION_5_6,
-                        MIGRATION_6_7
+                        MIGRATION_6_7,
+                        MIGRATION_7_8
                     )
                     .build()
 

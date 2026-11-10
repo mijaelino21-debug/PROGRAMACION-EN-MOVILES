@@ -16,7 +16,7 @@ import com.tecsup.catalogo.notification.NotificadorAndroid
 import com.tecsup.catalogo.ui.admin.AdminHotelesViewModel
 import com.tecsup.catalogo.ui.admin.AdminReservasViewModel
 import com.tecsup.catalogo.ui.admin.AdminViewModel
-import com.tecsup.catalogo.ui.auth.AuthViewModel
+import com.tecsup.catalogo.ui.login.AuthViewModel
 import com.tecsup.catalogo.ui.lista.ListaViewModel
 import com.tecsup.catalogo.ui.reservas.MisReservasViewModel
 
@@ -27,7 +27,7 @@ class AppContainer(context: Context) {
 
     val authRepository: AuthRepository = FirebaseAuthRepository()
     val hotelRepository: HotelRepository =
-        HotelRepositoryImpl(RetrofitClient.apiService, database.hotelDao())
+        HotelRepositoryImpl(RetrofitClient.apiService, database.hotelDao(), authRepository, database.favoritoDao())
     val reservaRepository: ReservaRepository = ReservaRepositoryImpl(database.reservaDao())
     val notificador: Notificador = NotificadorAndroid(appContext)
 }
@@ -45,7 +45,7 @@ class AppViewModelFactory(private val container: AppContainer) : ViewModelProvid
         modelClass.isAssignableFrom(AdminHotelesViewModel::class.java) ->
             AdminHotelesViewModel(container.hotelRepository) as T
         modelClass.isAssignableFrom(MisReservasViewModel::class.java) ->
-            MisReservasViewModel(container.reservaRepository) as T
+            MisReservasViewModel(container.reservaRepository, container.authRepository) as T
         modelClass.isAssignableFrom(AdminReservasViewModel::class.java) ->
             AdminReservasViewModel(container.reservaRepository) as T
         else -> throw IllegalArgumentException("ViewModel desconocido: ${modelClass.name}")

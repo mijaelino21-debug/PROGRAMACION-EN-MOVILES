@@ -1,47 +1,72 @@
 package com.tecsup.catalogo.data.repository
 
 import android.util.Log
-import com.tecsup.catalogo.data.dto.HotelDto
-import com.tecsup.catalogo.data.dto.toDomain
-import com.tecsup.catalogo.data.dto.toEntity
+import com.tecsup.catalogo.data.auth.AuthRepository
+import com.tecsup.catalogo.data.remote.dto.HotelDto
+import com.tecsup.catalogo.data.remote.dto.toDomain
+import com.tecsup.catalogo.data.remote.dto.toEntity
+import com.tecsup.catalogo.data.local.FavoritoDao
+import com.tecsup.catalogo.data.local.FavoritoEntity
 import com.tecsup.catalogo.data.local.HotelDao
 import com.tecsup.catalogo.data.local.HotelEntity
 import com.tecsup.catalogo.data.remote.ApiService
 import com.tecsup.catalogo.domain.model.Hotel
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import retrofit2.HttpException
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class HotelRepositoryImpl(
     private val apiService: ApiService,
-    private val hotelDao: HotelDao
+    private val hotelDao: HotelDao,
+    private val authRepository: AuthRepository,
+    private val favoritoDao: FavoritoDao
 ) : HotelRepository {
 
     companion object {
         private const val TAG = "HotelRepository"
     }
 
-    override val items: Flow<List<Hotel>> =
-        hotelDao.todos().map { list -> list.map { it.toHotel() } }
+    override val items: Flow<List<Hotel>> = authRepository.usuarioUid.flatMapLatest { uid ->
+        val favsFlow = if (uid != null) favoritoDao.hotelIdsFavoritos(uid) else flowOf(emptyList())
+        combine(hotelDao.todos(), favsFlow) { entities, favIds ->
+            val favSet = favIds.toSet()
+            entities.map { it.toHotel(esFavorito = it.id in favSet) }
+        }
+    }
 
-    override val hotelesActivos: Flow<List<Hotel>> =
-        hotelDao.todosActivos().map { list -> list.map { it.toHotel() } }
+    override val hotelesActivos: Flow<List<Hotel>> = authRepository.usuarioUid.flatMapLatest { uid ->
+        val favsFlow = if (uid != null) favoritoDao.hotelIdsFavoritos(uid) else flowOf(emptyList())
+        combine(hotelDao.todosActivos(), favsFlow) { entities, favIds ->
+            val favSet = favIds.toSet()
+            entities.map { it.toHotel(esFavorito = it.id in favSet) }
+        }
+    }
 
-    override val favoritos: Flow<List<Hotel>> =
-        hotelDao.favoritos().map { list -> list.map { it.toHotel() } }
+    override val favoritos: Flow<List<Hotel>> = authRepository.usuarioUid.flatMapLatest { uid ->
+        if (uid == null) {
+            flowOf(emptyList())
+        } else {
+            combine(hotelDao.todos(), favoritoDao.hotelIdsFavoritos(uid)) { entities, favIds ->
+                val favSet = favIds.toSet()
+                entities.filter { it.id in favSet }.map { it.toHotel(esFavorito = true) }
+            }
+        }
+    }
 
     // ---------------------------------------------------------------
     // Sincronización: Room es la fuente de verdad, MockAPI la actualiza
     // ---------------------------------------------------------------
     override suspend fun refrescar(): Result<Int> {
         return try {
-            // Si MockAPI tiene copias (mismo nombre y ciudad), nos quedamos con la de id más bajo
             val remotos: List<HotelDto> = apiService.getHoteles()
                 .sortedBy { it.id?.toIntOrNull() ?: Int.MAX_VALUE }
                 .distinctBy { "${it.nombre}|${it.ciudad}" }
 
-            // Para reparar filas viejas sin remoteId: nombre+ciudad -> id remoto
             val remotoPorNombre = HashMap<String, String>()
             remotos.forEach { dto ->
                 val id = dto.id ?: return@forEach
@@ -49,34 +74,30 @@ class HotelRepositoryImpl(
             }
             val idsRemotos = remotos.mapNotNull { it.id }.toSet()
 
-            // 1) Agrupar filas locales por hotel remoto y borrar las repetidas
             val existentes = hotelDao.listarTodos()
             val conservar = HashMap<String, HotelEntity>()
             val sobrantes = mutableListOf<Int>()
             existentes
                 .groupBy { it.remoteId ?: remotoPorNombre["${it.nombre}|${it.ciudad}"] }
                 .forEach { (clave, lista) ->
-                    if (clave == null) return@forEach // hotel solo local: no se toca
-                    val keep = lista.firstOrNull { it.esFavorito } ?: lista.minBy { it.id }
+                    if (clave == null) return@forEach
+                    val keep = lista.minBy { it.id }
                     conservar[clave] = keep
                     lista.filter { it.id != keep.id }.forEach { sobrantes.add(it.id) }
                 }
 
-            // Filas con remoteId que ya no existe en el servidor (copias o borrados)
             existentes
                 .filter { it.remoteId != null && it.remoteId !in idsRemotos }
                 .forEach { sobrantes.add(it.id) }
 
             if (sobrantes.isNotEmpty()) hotelDao.eliminarPorIds(sobrantes.distinct())
 
-            // 2) Actualizar los existentes (mismo id local) y agregar los nuevos
             val entidades = remotos.map { dto ->
-                val base = dto.toEntity()
+                val base = dto.toEntity(esFavorito = false)
                 val previo = dto.id?.let { conservar[it] }
                 if (previo != null) {
                     base.copy(
                         id = previo.id,
-                        esFavorito = previo.esFavorito,
                         activo = previo.activo
                     )
                 } else base
@@ -91,15 +112,13 @@ class HotelRepositoryImpl(
         }
     }
 
-    // ---------------------------------------------------------------
-    // Detalle (segundo endpoint: GET hoteles/{id})
-    // ---------------------------------------------------------------
     override suspend fun obtenerDetalle(id: Int): Result<Hotel> {
         val local = hotelDao.porId(id)
+        val uid = authRepository.usuarioUid.value
+        val esFav = if (uid != null) favoritoDao.existe(uid, id) else false
         return try {
             val remoteId = local?.remoteId ?: id.toString()
             val dto = apiService.getHotel(remoteId)
-            val esFav = local?.esFavorito ?: false
             Result.success(
                 dto.toDomain().copy(
                     id = id,
@@ -110,18 +129,20 @@ class HotelRepositoryImpl(
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            // Sin internet: usamos lo guardado en Room
-            if (local != null) Result.success(local.toHotel()) else Result.failure(e)
+            if (local != null) Result.success(local.toHotel(esFavorito = esFav)) else Result.failure(e)
         }
     }
 
     override suspend fun alternarFavorito(id: Int) {
-        hotelDao.alternarFavorito(id)
+        val uid = authRepository.usuarioUid.value ?: return
+        val esFav = favoritoDao.existe(uid, id)
+        if (esFav) {
+            favoritoDao.eliminar(uid, id)
+        } else {
+            favoritoDao.insertar(FavoritoEntity(uid, id))
+        }
     }
 
-    // ---------------------------------------------------------------
-    // Administración de hoteles
-    // ---------------------------------------------------------------
     override suspend fun agregarHotel(hotel: Hotel): Result<Unit> {
         return try {
             val dto = hotel.toDto(remoteId = null)
@@ -146,10 +167,9 @@ class HotelRepositoryImpl(
         return try {
             val previo = hotelDao.porId(hotel.id)
             val local = hotel.toEntity(
-                esFavorito = previo?.esFavorito ?: false,
+                esFavorito = false,
                 remoteId = previo?.remoteId
             )
-            // Se guarda primero en Room (la app funciona aunque no haya internet)
             hotelDao.insertarOActualizar(local)
             try {
                 subirARemoto(local)
@@ -198,26 +218,17 @@ class HotelRepositoryImpl(
         } catch (e: Exception) {
             Result.failure(e)
         }
-    }git add -A .
-    git commit -m "chore: eliminar prueba de ejemplo sin uso"
-    git push
+    }
 
-    // ---------------------------------------------------------------
-    // Estadísticas y caché
-    // ---------------------------------------------------------------
     override suspend fun cantidadGuardada(): Int = hotelDao.contar()
 
-    override suspend fun cantidadFavoritos(): Int = hotelDao.contarFavoritos()
+    override suspend fun cantidadFavoritos(): Int = favoritoDao.contarFavoritos()
 
     override suspend fun limpiarCache() {
         hotelDao.borrarTodo()
+        favoritoDao.borrarTodo()
     }
 
-    // ---------------------------------------------------------------
-    // Auxiliares
-    // ---------------------------------------------------------------
-
-    /** Sube el hotel a MockAPI: PUT si ya tiene remoteId; POST si no existe (o dio 404). */
     private suspend fun subirARemoto(local: HotelEntity) {
         val remoteId = local.remoteId
         val resultado: HotelDto = if (remoteId == null) {
@@ -256,7 +267,7 @@ class HotelRepositoryImpl(
         activo = activo
     )
 
-    private fun HotelEntity.toHotel(): Hotel {
+    private fun HotelEntity.toHotel(esFavorito: Boolean = false): Hotel {
         return Hotel(
             id = id,
             nombre = nombre,

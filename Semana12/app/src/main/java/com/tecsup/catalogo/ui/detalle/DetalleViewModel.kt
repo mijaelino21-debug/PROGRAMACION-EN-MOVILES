@@ -66,8 +66,9 @@ class DetalleViewModel(
                 return@launch
             }
             _reservaEstado.value = UiState.Cargando
+            val uid = sesion?.uid ?: authRepository.usuarioUid.value ?: ""
             val reserva = Reserva(
-                usuarioId = "",
+                usuarioId = uid,
                 hotelId = hotel.id,
                 nombreHotel = hotel.nombre,
                 imagenUrl = hotel.imagenUrl,
