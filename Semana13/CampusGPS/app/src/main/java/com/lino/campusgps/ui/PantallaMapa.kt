@@ -59,6 +59,7 @@ fun PantallaMapa(vm: MapaViewModel) {
             )
         }
     ) { padding ->
+
         Column(
             modifier = Modifier.padding(padding).fillMaxSize().padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -85,6 +86,13 @@ fun PantallaMapa(vm: MapaViewModel) {
                 }
                 is UbicacionUi.Error -> Text(e.mensaje, color = MaterialTheme.colorScheme.error)
             }
+            ListaLugares(
+                lugares = lugares,
+                seleccionado = seleccionado,
+                onClick = { vm.seleccionar(it) },
+                modifier = Modifier.fillMaxWidth().height(220.dp)
+            )
         }
+
     }
 }
