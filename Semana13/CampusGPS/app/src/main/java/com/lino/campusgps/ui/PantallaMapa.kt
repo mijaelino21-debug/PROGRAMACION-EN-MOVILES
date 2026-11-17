@@ -13,6 +13,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.lino.campusgps.model.UbicacionUi
+import com.lino.campusgps.util.formatearDistancia
 import com.lino.campusgps.viewmodel.MapaViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -21,6 +22,7 @@ fun PantallaMapa(vm: MapaViewModel) {
     val estado by vm.estado.collectAsState()
     val lugares by vm.lugares.collectAsState()
     val seleccionado by vm.seleccionado.collectAsState()
+    val masCercano by vm.masCercano.collectAsState()
     val contexto = LocalContext.current
 
     val lanzador = rememberLauncherForActivityResult(
@@ -69,6 +71,7 @@ fun PantallaMapa(vm: MapaViewModel) {
                 estado = estado,
                 lugares = lugares,
                 seleccionado = seleccionado,
+                masCercanoId = masCercano?.id,
                 modifier = Modifier.weight(1f)
             )
 
@@ -76,6 +79,18 @@ fun PantallaMapa(vm: MapaViewModel) {
                 onClick = { alPulsar() },
                 enabled = estado !is UbicacionUi.Buscando
             ) { Text("Obtener mi ubicación") }
+
+            OutlinedButton(
+                onClick = { masCercano?.let { vm.seleccionar(it.id) } },
+                enabled = masCercano != null
+            ) { Text("Ir al más cercano") }
+
+            masCercano?.let { cercano ->
+                val metros = lugares.firstOrNull { it.lugar.id == cercano.id }?.metros
+                if (metros != null) {
+                    Text("Más cercano: ${cercano.nombre} (${formatearDistancia(metros)})")
+                }
+            }
 
             when (val e = estado) {
                 UbicacionUi.Inicial -> Text("Pulsa el botón para empezar")
