@@ -7,6 +7,8 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.MapProperties
+import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberUpdatedMarkerState
@@ -20,6 +22,7 @@ fun MapaUbicacion(
     lugares: List<LugarConDistancia>,
     seleccionado: Int?,
     masCercanoId: Int?,
+    tienePermiso: Boolean,
     modifier: Modifier = Modifier
 ) {
     val camara = rememberCameraPositionState {
@@ -46,7 +49,9 @@ fun MapaUbicacion(
 
     GoogleMap(
         modifier = modifier,
-        cameraPositionState = camara
+        cameraPositionState = camara,
+        properties = MapProperties(isMyLocationEnabled = tienePermiso),
+        uiSettings = MapUiSettings(myLocationButtonEnabled = tienePermiso)
     ) {
         if (estado is UbicacionUi.Lista) {
             Marker(

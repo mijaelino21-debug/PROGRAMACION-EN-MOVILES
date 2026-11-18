@@ -25,20 +25,30 @@ fun PantallaMapa(vm: MapaViewModel) {
     val masCercano by vm.masCercano.collectAsState()
     val contexto = LocalContext.current
 
-    val lanzador = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestMultiplePermissions()
-    ) { resultado ->
-        if (resultado.values.any { it }) vm.buscar() else vm.permisoDenegado()
-    }
-
-    fun alPulsar() {
+    fun hayPermisoUbicacion(): Boolean {
         val fino = ContextCompat.checkSelfPermission(
             contexto, Manifest.permission.ACCESS_FINE_LOCATION
         )
         val grueso = ContextCompat.checkSelfPermission(
             contexto, Manifest.permission.ACCESS_COARSE_LOCATION
         )
-        if (fino == PackageManager.PERMISSION_GRANTED || grueso == PackageManager.PERMISSION_GRANTED) {
+        return fino == PackageManager.PERMISSION_GRANTED ||
+            grueso == PackageManager.PERMISSION_GRANTED
+    }
+
+    var tienePermiso by remember { mutableStateOf(hayPermisoUbicacion()) }
+
+    val lanzador = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { resultado ->
+        val concedido = resultado.values.any { it }
+        tienePermiso = concedido
+        if (concedido) vm.buscar() else vm.permisoDenegado()
+    }
+
+    fun alPulsar() {
+        if (hayPermisoUbicacion()) {
+            tienePermiso = true
             vm.buscar()
         } else {
             lanzador.launch(
@@ -72,6 +82,7 @@ fun PantallaMapa(vm: MapaViewModel) {
                 lugares = lugares,
                 seleccionado = seleccionado,
                 masCercanoId = masCercano?.id,
+                tienePermiso = tienePermiso,
                 modifier = Modifier.weight(1f)
             )
 
