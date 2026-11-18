@@ -60,8 +60,8 @@ fun PantallaTareas(viewModel: TareasViewModel, modifier: Modifier = Modifier) {
                         Text("Tócame: $toques")
                     }
 
-                    Button(onClick = { viewModel.tareaLargaMala() }) {
-                        Text("Tarea larga (MAL)")
+                    Button(onClick = { viewModel.tareaLarga() }) {
+                        Text("Tarea larga")
                     }
 
                     val mensaje by viewModel.mensaje.collectAsState()
