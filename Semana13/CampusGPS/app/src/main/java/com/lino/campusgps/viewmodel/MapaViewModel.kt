@@ -3,6 +3,7 @@ package com.lino.campusgps.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lino.campusgps.data.LugaresRepository
+import com.lino.campusgps.data.PreferenciasRepository
 import com.lino.campusgps.data.UbicacionNoDisponibleException
 import com.lino.campusgps.data.UbicacionRepository
 import com.lino.campusgps.model.Lugar
@@ -21,7 +22,8 @@ import kotlinx.coroutines.launch
 
 class MapaViewModel(
     private val ubicacionRepo: UbicacionRepository,
-    private val lugaresRepo: LugaresRepository
+    private val lugaresRepo: LugaresRepository,
+    private val preferenciasRepo: PreferenciasRepository
 ) : ViewModel() {
 
     private val _estado = MutableStateFlow<UbicacionUi>(UbicacionUi.Inicial)
@@ -69,10 +71,19 @@ class MapaViewModel(
 
     fun seleccionar(id: Int?) {
         _seleccionado.value = id
+        if (id != null) {
+            viewModelScope.launch { preferenciasRepo.guardarUltimoLugar(id) }
+        }
     }
 
     val masCercano: StateFlow<Lugar?> = lugares
         .map { lista -> lista.firstOrNull { it.metros != null }?.lugar }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
+
+    val ultimoLugar: StateFlow<Lugar?> = preferenciasRepo.ultimoLugarId
+        .map { id ->
+            id?.let { buscado -> lugaresRepo.obtenerLugares().firstOrNull { it.id == buscado } }
+        }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
     private fun errorDe(e: Throwable): UbicacionUi.Error = when (e) {
