@@ -2,19 +2,32 @@ package com.lino.centrotareas.data
 
 import java.io.IOException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 
 class TareasRepositoryLocal : TareasRepository {
-    override suspend fun contarPrimos(hasta: Int): Int = withContext(Dispatchers.Default) {
+    override fun contarPrimos(hasta: Int): Flow<ProgresoPrimos> = flow {
         var cantidad = 0
+        var ultimoPorcentaje = -1
+
         for (n in 2..hasta) {
-            ensureActive()
+            currentCoroutineContext().ensureActive()
             if (esPrimo(n)) cantidad++
+
+            val porcentaje = ((n.toLong() * 100) / hasta).toInt()
+            if (porcentaje > ultimoPorcentaje) {
+                ultimoPorcentaje = porcentaje
+                emit(ProgresoPrimos(porcentaje / 100f, cantidad))
+            }
         }
-        cantidad
-    }
+        if (ultimoPorcentaje < 100) {
+            emit(ProgresoPrimos(1.0f, cantidad))
+        }
+    }.flowOn(Dispatchers.Default)
 
     private fun esPrimo(n: Int): Boolean {
         var d = 2

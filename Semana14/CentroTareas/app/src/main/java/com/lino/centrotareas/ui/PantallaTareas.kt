@@ -160,7 +160,18 @@ fun PantallaTareas(viewModel: TareasViewModel, modifier: Modifier = Modifier) {
                             }
                         }
                         is PrimosUi.Cancelado -> Text("Cancelado")
-                        is PrimosUi.Calculando -> Text("Calculando...")
+                        is PrimosUi.Calculando -> {
+                            Column(
+                                modifier = Modifier.padding(top = 8.dp),
+                                verticalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                LinearProgressIndicator(
+                                    progress = { estado.progreso },
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                                Text("Calculando primos: ${(estado.progreso * 100).toInt()} %")
+                            }
+                        }
                         PrimosUi.Inicial -> Unit
                     }
                 }
