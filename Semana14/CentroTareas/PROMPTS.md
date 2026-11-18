@@ -1,0 +1,24 @@
+# PROMPTS.md
+
+## Fase 2 – Mejoras implementadas con asistencia de IA
+
+Se utilizó Gemini integrado en Android Studio para proponer e implementar tres mejoras en el proyecto CentroTareas. Las respuestas fueron revisadas y las funcionalidades fueron probadas antes de conservar los cambios.
+
+| Prompt que escribí | Qué respondió Gemini | Qué cambié o descarté | Por qué |
+|---|---|---|---|
+| **1. Primos con progreso.** El texto literal del prompt original no se conservó. El objetivo solicitado fue mostrar el avance porcentual durante el cálculo de números primos, utilizando Repository, ViewModel y la interfaz. | Gemini modificó `TareasRepository`, `TareasRepositoryLocal`, `Estados.kt`, `TareasViewModel` y `PantallaTareas`. Cambió el método de cálculo para emitir un `Flow<ProgresoPrimos>`, actualizó el progreso en el ViewModel y agregó una barra de progreso con porcentaje en la interfaz. Conservó la cancelación mediante `ensureActive()` y el manejo de `CancellationException`. La compilación fue exitosa. | Se aceptó la implementación propuesta. Se probaron el cálculo, la visualización del progreso, la cancelación y el reinicio del cálculo. | La mejora permite visualizar cuánto falta para terminar el cálculo y comprobar que la operación puede cancelarse correctamente. |
+| **2. Comparación de tiempos.** Implementa únicamente la mejora «Comparación de tiempos» en CentroTareas. Objetivo: acumular los tiempos de ejecución de «Una por una» y «A la vez» y mostrarlos en una tabla dentro de la pantalla. Requisitos: registrar el tiempo de cada ejecución secuencial y paralela; mostrar los resultados acumulados en una tabla, diferenciando ambas modalidades; utilizar los tiempos reales que ya calcula la aplicación; mantener MVVM + Repository; conservar las cargas, errores y reintentos; mantener la mejora de primos con progreso; no implementar todavía DataStore. Restricciones: modificar únicamente los archivos necesarios del ViewModel y la pantalla; no usar GlobalScope, runBlocking ni Thread.sleep; no ejecutar Git ni hacer refactorizaciones ajenas. Revisar el código antes de editar y ejecutar `:app:compileDebugKotlin`. | Gemini modificó `Estados.kt`, `TareasViewModel.kt` y `PantallaTareas.kt`. Agregó estadísticas para ambas modalidades, registrando cantidad de ejecuciones, tiempo último, promedio y total. También agregó una tabla para mostrar los resultados acumulados. La compilación fue exitosa. | Se aceptó la implementación. Se ejecutaron las cargas «Una por una» y «A la vez» y se verificó que la tabla mostrara sus tiempos. | Permite comparar el rendimiento de las cargas secuenciales y paralelas utilizando los tiempos medidos por la aplicación. |
+| **3. Historial de resultados con DataStore.** Implementa únicamente la mejora «Historial de resultados con DataStore» en CentroTareas. Objetivo: guardar y mostrar los últimos 5 resultados de la aplicación. Requisitos: guardar los resultados de cálculos de primos y cargas de tareas; utilizar DataStore para conservarlos al cerrar y abrir la aplicación; mostrar el historial en la pantalla principal al iniciar la aplicación; mantener únicamente los últimos 5 resultados; respetar MVVM + Repository; conservar las mejoras existentes. Restricciones: revisar el código y las dependencias existentes; modificar únicamente los archivos necesarios; no usar GlobalScope, runBlocking ni Thread.sleep; conservar el manejo y relanzamiento de CancellationException; no ejecutar Git ni refactorizaciones ajenas. Al terminar, indicar los archivos modificados y ejecutar `:app:compileDebugKotlin`. | Gemini agregó Jetpack DataStore Preferences. Modificó las dependencias, el Repository, su implementación local, el ViewModel, el Factory, MainActivity y la pantalla principal. Implementó el almacenamiento de hasta cinco resultados, la observación del historial mediante StateFlow y una tarjeta para mostrarlo en la interfaz. La compilación fue exitosa. | Se aceptó la implementación. Se realizaron cálculos de primos y cargas, se verificó que aparecieran en el historial y se cerró y volvió a abrir la aplicación para comprobar que los resultados persistieran. | DataStore permite conservar los resultados aunque se cierre la aplicación y consultar las últimas cinco operaciones realizadas. |
+
+## Verificaciones realizadas
+
+- Se compiló el proyecto con `:app:compileDebugKotlin`.
+- Se probó el cálculo de primos con su barra de progreso.
+- Se comprobó la cancelación y el reinicio del cálculo.
+- Se probaron las cargas secuenciales y paralelas.
+- Se verificó la tabla de comparación de tiempos.
+- Se comprobó que el historial mostrara resultados y persistiera al reiniciar la aplicación.
+
+## Conclusión
+
+Las tres mejoras fueron implementadas con asistencia de Gemini, revisadas y probadas en la aplicación CentroTareas. Se conservaron las funcionalidades anteriores y se mantuvo la arquitectura MVVM + Repository.
