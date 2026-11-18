@@ -9,6 +9,8 @@ import com.lino.centrotareas.model.PrimosUi
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -86,6 +88,45 @@ class TareasViewModel(private val repo: TareasRepository) : ViewModel() {
         trabajoPrimos?.cancel()
     }
 
-    // TODO Paso 6
+    fun cargarUnaPorUna() {
+        if (_carga.value is CargaUi.Cargando) return
+
+        _carga.value = CargaUi.Cargando
+        viewModelScope.launch {
+            val inicio = System.currentTimeMillis()
+            val perfil = repo.cargarPerfil()
+            val pedidos = repo.cargarPedidos(false)
+            val milisegundos = System.currentTimeMillis() - inicio
+            _carga.value = CargaUi.Exito(
+                "Una por una",
+                perfil,
+                pedidos.size,
+                milisegundos
+            )
+        }
+    }
+
+    fun cargarALaVez() {
+        if (_carga.value is CargaUi.Cargando) return
+
+        _carga.value = CargaUi.Cargando
+        viewModelScope.launch {
+            val inicio = System.currentTimeMillis()
+            coroutineScope {
+                val a = async { repo.cargarPerfil() }
+                val b = async { repo.cargarPedidos(false) }
+                val perfil = a.await()
+                val pedidos = b.await()
+                val milisegundos = System.currentTimeMillis() - inicio
+                _carga.value = CargaUi.Exito(
+                    "A la vez",
+                    perfil,
+                    pedidos.size,
+                    milisegundos
+                )
+            }
+        }
+    }
+
     // TODO Paso 7
 }

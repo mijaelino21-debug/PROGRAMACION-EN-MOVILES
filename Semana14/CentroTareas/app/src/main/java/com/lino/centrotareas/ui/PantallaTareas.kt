@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -29,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.lino.centrotareas.model.CargaUi
 import com.lino.centrotareas.model.PrimosUi
 import com.lino.centrotareas.viewmodel.TareasViewModel
 
@@ -170,7 +172,49 @@ fun PantallaTareas(viewModel: TareasViewModel, modifier: Modifier = Modifier) {
                         color = Color.Blue,
                         style = MaterialTheme.typography.titleMedium
                     )
-                    // TODO
+
+                    val carga by viewModel.carga.collectAsState()
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(
+                            8.dp,
+                            Alignment.CenterHorizontally
+                        )
+                    ) {
+                        OutlinedButton(
+                            onClick = { viewModel.cargarUnaPorUna() },
+                            enabled = carga !is CargaUi.Cargando
+                        ) {
+                            Text("Una por una")
+                        }
+
+                        Button(
+                            onClick = { viewModel.cargarALaVez() },
+                            enabled = carga !is CargaUi.Cargando
+                        ) {
+                            Text("A la vez")
+                        }
+                    }
+
+                    when (val estado = carga) {
+                        is CargaUi.Cargando -> CircularProgressIndicator()
+                        is CargaUi.Exito -> {
+                            Surface(
+                                color = Color(0xFFC8E6C9),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Column(modifier = Modifier.padding(8.dp)) {
+                                    Text("Modo: ${estado.modo}")
+                                    Text("Perfil: ${estado.perfil}")
+                                    Text("Pedidos: ${estado.pedidos}")
+                                    Text("Tiempo: ${estado.milisegundos} ms")
+                                }
+                            }
+                        }
+                        is CargaUi.Error -> Unit
+                        CargaUi.Inicial -> Unit
+                    }
                 }
             }
         }
