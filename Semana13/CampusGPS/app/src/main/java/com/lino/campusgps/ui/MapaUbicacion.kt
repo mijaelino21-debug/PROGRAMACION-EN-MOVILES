@@ -1,9 +1,13 @@
 package com.lino.campusgps.ui
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
@@ -12,6 +16,7 @@ import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberUpdatedMarkerState
+import com.lino.campusgps.R
 import com.lino.campusgps.model.LugarConDistancia
 import com.lino.campusgps.model.UbicacionUi
 import androidx.compose.runtime.key
@@ -25,6 +30,16 @@ fun MapaUbicacion(
     tienePermiso: Boolean,
     modifier: Modifier = Modifier
 ) {
+    val contexto = LocalContext.current
+    val temaOscuro = isSystemInDarkTheme()
+    val estilo = remember(temaOscuro) {
+        if (temaOscuro) {
+            MapStyleOptions.loadRawResourceStyle(contexto, R.raw.mapa_oscuro)
+        } else {
+            null
+        }
+    }
+
     val camara = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(LatLng(-12.0464, -77.0428), 12f)
     }
@@ -50,7 +65,10 @@ fun MapaUbicacion(
     GoogleMap(
         modifier = modifier,
         cameraPositionState = camara,
-        properties = MapProperties(isMyLocationEnabled = tienePermiso),
+        properties = MapProperties(
+            isMyLocationEnabled = tienePermiso,
+            mapStyleOptions = estilo
+        ),
         uiSettings = MapUiSettings(myLocationButtonEnabled = tienePermiso)
     ) {
         if (estado is UbicacionUi.Lista) {
