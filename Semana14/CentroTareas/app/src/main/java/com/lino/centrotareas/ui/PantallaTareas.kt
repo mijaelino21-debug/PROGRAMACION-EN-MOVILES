@@ -6,13 +6,16 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -24,7 +27,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.lino.centrotareas.model.PrimosUi
 import com.lino.centrotareas.viewmodel.TareasViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -103,7 +108,58 @@ fun PantallaTareas(viewModel: TareasViewModel, modifier: Modifier = Modifier) {
                         color = Color.Blue,
                         style = MaterialTheme.typography.titleMedium
                     )
-                    // TODO
+
+                    var textoHasta by remember { mutableStateOf("4200000") }
+                    val primos by viewModel.primos.collectAsState()
+
+                    OutlinedTextField(
+                        value = textoHasta,
+                        onValueChange = { textoHasta = it },
+                        label = { Text("Hasta el número") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                    )
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(
+                            8.dp,
+                            Alignment.CenterHorizontally
+                        )
+                    ) {
+                        Button(
+                            onClick = {
+                                val n = textoHasta.toIntOrNull()
+                                if (n != null && n >= 2) viewModel.contar(n)
+                            },
+                            enabled = primos !is PrimosUi.Calculando
+                        ) {
+                            Text("Contar")
+                        }
+
+                        OutlinedButton(
+                            onClick = { viewModel.cancelarPrimos() },
+                            enabled = primos is PrimosUi.Calculando
+                        ) {
+                            Text("Cancelar")
+                        }
+                    }
+
+                    when (val estado = primos) {
+                        is PrimosUi.Listo -> {
+                            Surface(
+                                color = Color(0xFFC8E6C9),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Column(modifier = Modifier.padding(8.dp)) {
+                                    Text("Primos hasta $textoHasta: ${estado.cantidad}")
+                                    Text("Tiempo: ${estado.milisegundos} ms")
+                                }
+                            }
+                        }
+                        is PrimosUi.Cancelado -> Text("Cancelado")
+                        is PrimosUi.Calculando -> Text("Calculando...")
+                        PrimosUi.Inicial -> Unit
+                    }
                 }
             }
 

@@ -1,12 +1,28 @@
 package com.lino.centrotareas.data
 
 import java.io.IOException
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.withContext
 
 class TareasRepositoryLocal : TareasRepository {
-    override suspend fun contarPrimos(hasta: Int): Int {
-        // TODO Paso 5
-        return 0
+    override suspend fun contarPrimos(hasta: Int): Int = withContext(Dispatchers.Default) {
+        var cantidad = 0
+        for (n in 2..hasta) {
+            ensureActive()
+            if (esPrimo(n)) cantidad++
+        }
+        cantidad
+    }
+
+    private fun esPrimo(n: Int): Boolean {
+        var d = 2
+        while (d.toLong() * d <= n) {
+            if (n % d == 0) return false
+            d++
+        }
+        return true
     }
 
     override suspend fun cargarPerfil(): String {
