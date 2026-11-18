@@ -19,3 +19,13 @@ sealed interface CargaUi {
 
     data class Error(val mensaje: String) : CargaUi
 }
+
+data class EstadisticaModo(
+    val modalidad: String,
+    val cantidadEjecuciones: Int = 0,
+    val tiempoTotalMs: Long = 0L,
+    val ultimoTiempoMs: Long = 0L
+) {
+    val tiempoPromedioMs: Double
+        get() = if (cantidadEjecuciones > 0) tiempoTotalMs.toDouble() / cantidadEjecuciones else 0.0
+}

@@ -3,14 +3,20 @@ package com.lino.centrotareas.ui
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -29,11 +35,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.lino.centrotareas.model.CargaUi
+import com.lino.centrotareas.model.EstadisticaModo
 import com.lino.centrotareas.model.PrimosUi
 import com.lino.centrotareas.viewmodel.TareasViewModel
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -48,6 +58,7 @@ fun PantallaTareas(viewModel: TareasViewModel, modifier: Modifier = Modifier) {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
+                .verticalScroll(rememberScrollState())
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
@@ -178,7 +189,10 @@ fun PantallaTareas(viewModel: TareasViewModel, modifier: Modifier = Modifier) {
             }
 
             Card(modifier = Modifier.fillMaxWidth()) {
-                Column(modifier = Modifier.padding(16.dp)) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
                     Text(
                         text = "Dos cargas",
                         color = Color.Blue,
@@ -187,6 +201,7 @@ fun PantallaTareas(viewModel: TareasViewModel, modifier: Modifier = Modifier) {
 
                     val carga by viewModel.carga.collectAsState()
                     val simularError by viewModel.simularError.collectAsState()
+                    val estadisticasTiempos by viewModel.estadisticasTiempos.collectAsState()
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -255,6 +270,119 @@ fun PantallaTareas(viewModel: TareasViewModel, modifier: Modifier = Modifier) {
                         }
                         CargaUi.Inicial -> Unit
                     }
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    Text(
+                        text = "Comparación de tiempos",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    TablaComparacionTiempos(estadisticas = estadisticasTiempos)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun TablaComparacionTiempos(
+    estadisticas: List<EstadisticaModo>,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        ),
+        modifier = modifier.fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Modo",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.weight(1.3f)
+                )
+                Text(
+                    text = "Cant.",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.weight(0.7f)
+                )
+                Text(
+                    text = "Último",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.End,
+                    modifier = Modifier.weight(1f)
+                )
+                Text(
+                    text = "Prom.",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.End,
+                    modifier = Modifier.weight(1f)
+                )
+                Text(
+                    text = "Total",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.End,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+
+            HorizontalDivider()
+
+            for (stat in estadisticas) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = stat.modalidad,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.weight(1.3f)
+                    )
+                    Text(
+                        text = stat.cantidadEjecuciones.toString(),
+                        style = MaterialTheme.typography.bodySmall,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.weight(0.7f)
+                    )
+                    Text(
+                        text = if (stat.cantidadEjecuciones > 0) "${stat.ultimoTiempoMs} ms" else "-",
+                        style = MaterialTheme.typography.bodySmall,
+                        textAlign = TextAlign.End,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Text(
+                        text = if (stat.cantidadEjecuciones > 0) String.format(Locale.US, "%.0f ms", stat.tiempoPromedioMs) else "-",
+                        style = MaterialTheme.typography.bodySmall,
+                        textAlign = TextAlign.End,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Text(
+                        text = if (stat.cantidadEjecuciones > 0) "${stat.tiempoTotalMs} ms" else "-",
+                        style = MaterialTheme.typography.bodySmall,
+                        textAlign = TextAlign.End,
+                        modifier = Modifier.weight(1f)
+                    )
                 }
             }
         }

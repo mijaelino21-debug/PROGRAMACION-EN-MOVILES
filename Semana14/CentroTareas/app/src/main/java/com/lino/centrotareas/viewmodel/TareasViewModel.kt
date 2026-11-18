@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lino.centrotareas.data.TareasRepository
 import com.lino.centrotareas.model.CargaUi
+import com.lino.centrotareas.model.EstadisticaModo
 import com.lino.centrotareas.model.PrimosUi
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -40,6 +41,28 @@ class TareasViewModel(private val repo: TareasRepository) : ViewModel() {
 
     private val _simularError = MutableStateFlow(false)
     val simularError: StateFlow<Boolean> = _simularError.asStateFlow()
+
+    private val _estadisticasTiempos = MutableStateFlow(
+        listOf(
+            EstadisticaModo("Una por una"),
+            EstadisticaModo("A la vez")
+        )
+    )
+    val estadisticasTiempos: StateFlow<List<EstadisticaModo>> = _estadisticasTiempos.asStateFlow()
+
+    private fun registrarTiempo(modalidad: String, milisegundos: Long) {
+        _estadisticasTiempos.value = _estadisticasTiempos.value.map { est ->
+            if (est.modalidad == modalidad) {
+                est.copy(
+                    cantidadEjecuciones = est.cantidadEjecuciones + 1,
+                    tiempoTotalMs = est.tiempoTotalMs + milisegundos,
+                    ultimoTiempoMs = milisegundos
+                )
+            } else {
+                est
+            }
+        }
+    }
 
     fun tareaLarga() {
         if (_corriendo.value) return
@@ -111,6 +134,7 @@ class TareasViewModel(private val repo: TareasRepository) : ViewModel() {
                     pedidos.size,
                     milisegundos
                 )
+                registrarTiempo("Una por una", milisegundos)
             } catch (e: Exception) {
                 if (e is CancellationException) throw e
                 _carga.value = CargaUi.Error("No se pudo cargar: " + e.message)
@@ -137,6 +161,7 @@ class TareasViewModel(private val repo: TareasRepository) : ViewModel() {
                         pedidos.size,
                         milisegundos
                     )
+                    registrarTiempo("A la vez", milisegundos)
                 }
             } catch (e: Exception) {
                 if (e is CancellationException) throw e
