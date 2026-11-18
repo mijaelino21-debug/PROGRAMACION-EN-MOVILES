@@ -17,6 +17,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -174,6 +175,22 @@ fun PantallaTareas(viewModel: TareasViewModel, modifier: Modifier = Modifier) {
                     )
 
                     val carga by viewModel.carga.collectAsState()
+                    val simularError by viewModel.simularError.collectAsState()
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(
+                            8.dp,
+                            Alignment.CenterHorizontally
+                        ),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("Simular error")
+                        Switch(
+                            checked = simularError,
+                            onCheckedChange = { viewModel.cambiarSimularError(it) }
+                        )
+                    }
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -212,7 +229,19 @@ fun PantallaTareas(viewModel: TareasViewModel, modifier: Modifier = Modifier) {
                                 }
                             }
                         }
-                        is CargaUi.Error -> Unit
+                        is CargaUi.Error -> {
+                            Surface(
+                                color = Color(0xFFFFCDD2),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Column(modifier = Modifier.padding(8.dp)) {
+                                    Text(estado.mensaje)
+                                    Button(onClick = { viewModel.cargarALaVez() }) {
+                                        Text("Reintentar")
+                                    }
+                                }
+                            }
+                        }
                         CargaUi.Inicial -> Unit
                     }
                 }
