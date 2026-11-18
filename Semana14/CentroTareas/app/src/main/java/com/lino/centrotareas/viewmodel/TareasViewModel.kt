@@ -14,8 +14,10 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -49,6 +51,13 @@ class TareasViewModel(private val repo: TareasRepository) : ViewModel() {
         )
     )
     val estadisticasTiempos: StateFlow<List<EstadisticaModo>> = _estadisticasTiempos.asStateFlow()
+
+    val historial: StateFlow<List<String>> = repo.obtenerHistorial()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
 
     private fun registrarTiempo(modalidad: String, milisegundos: Long) {
         _estadisticasTiempos.value = _estadisticasTiempos.value.map { est ->
@@ -107,6 +116,7 @@ class TareasViewModel(private val repo: TareasRepository) : ViewModel() {
                 }
                 val milisegundos = System.currentTimeMillis() - inicio
                 _primos.value = PrimosUi.Listo(cantidadFinal, milisegundos)
+                repo.guardarResultado("Primos (hasta $hasta): $cantidadFinal primos ($milisegundos ms)")
             } catch (e: CancellationException) {
                 _primos.value = PrimosUi.Cancelado
                 throw e
@@ -135,6 +145,7 @@ class TareasViewModel(private val repo: TareasRepository) : ViewModel() {
                     milisegundos
                 )
                 registrarTiempo("Una por una", milisegundos)
+                repo.guardarResultado("Carga (Una por una): ${pedidos.size} pedidos ($milisegundos ms)")
             } catch (e: Exception) {
                 if (e is CancellationException) throw e
                 _carga.value = CargaUi.Error("No se pudo cargar: " + e.message)
@@ -162,6 +173,7 @@ class TareasViewModel(private val repo: TareasRepository) : ViewModel() {
                         milisegundos
                     )
                     registrarTiempo("A la vez", milisegundos)
+                    repo.guardarResultado("Carga (A la vez): ${pedidos.size} pedidos ($milisegundos ms)")
                 }
             } catch (e: Exception) {
                 if (e is CancellationException) throw e

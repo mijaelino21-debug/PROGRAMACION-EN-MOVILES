@@ -282,6 +282,54 @@ fun PantallaTareas(viewModel: TareasViewModel, modifier: Modifier = Modifier) {
                     TablaComparacionTiempos(estadisticas = estadisticasTiempos)
                 }
             }
+
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = "Historial de resultados (últimos 5)",
+                        color = Color.Blue,
+                        style = MaterialTheme.typography.titleMedium
+                    )
+
+                    val historial by viewModel.historial.collectAsState()
+
+                    if (historial.isEmpty()) {
+                        Text(
+                            text = "Sin resultados registrados",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    } else {
+                        historial.forEachIndexed { index, item ->
+                            Surface(
+                                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = MaterialTheme.shapes.small
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(8.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = "${index + 1}. ",
+                                        fontWeight = FontWeight.Bold,
+                                        style = MaterialTheme.typography.bodyMedium
+                                    )
+                                    Text(
+                                        text = item,
+                                        style = MaterialTheme.typography.bodyMedium
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }

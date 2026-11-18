@@ -15,7 +15,7 @@ import com.lino.centrotareas.viewmodel.TareasViewModelFactory
 class MainActivity : ComponentActivity() {
 
     private val viewModel: TareasViewModel by viewModels {
-        TareasViewModelFactory()
+        TareasViewModelFactory(applicationContext)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
