@@ -8,6 +8,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -20,6 +21,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.lino.murocampus.ui.PantallaCrear
 import com.lino.murocampus.ui.PantallaDetalle
 import com.lino.murocampus.ui.PantallaLista
 import com.lino.murocampus.ui.theme.MuroCampusTheme
@@ -32,17 +34,31 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             var idSeleccionado by rememberSaveable { mutableStateOf<Int?>(null) }
-            BackHandler(enabled = idSeleccionado != null) { idSeleccionado = null }
+            var creando by rememberSaveable { mutableStateOf(false) }
+            BackHandler(enabled = creando || idSeleccionado != null) {
+                if (creando) creando = false else idSeleccionado = null
+            }
             val vm: PostsViewModel = viewModel(factory = PostsViewModelFactory())
             MuroCampusTheme {
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
-                    topBar = { MuroTopBar() }
+                    topBar = { MuroTopBar() },
+                    floatingActionButton = {
+                        if (!creando && idSeleccionado == null) {
+                            FloatingActionButton(onClick = {
+                                vm.limpiarEnvio()
+                                creando = true
+                            }) {
+                                Text("+")
+                            }
+                        }
+                    }
                 ) { innerPadding ->
                     val modifier = Modifier.padding(innerPadding)
                     val seleccionado = idSeleccionado
-                    if (seleccionado == null) {
-                        PantallaLista(
+                    when {
+                        creando -> PantallaCrear(vm = vm, modifier = modifier)
+                        seleccionado == null -> PantallaLista(
                             vm = vm,
                             modifier = modifier,
                             onPostClick = { id ->
@@ -50,8 +66,7 @@ class MainActivity : ComponentActivity() {
                                 idSeleccionado = id
                             }
                         )
-                    } else {
-                        PantallaDetalle(vm = vm, id = seleccionado, modifier = modifier)
+                        else -> PantallaDetalle(vm = vm, id = seleccionado, modifier = modifier)
                     }
                 }
             }
