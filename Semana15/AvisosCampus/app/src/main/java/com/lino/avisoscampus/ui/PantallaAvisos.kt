@@ -61,6 +61,12 @@ fun PantallaAvisos(viewModel: AvisosViewModel, modifier: Modifier = Modifier) {
         }
     }
 
+    LaunchedEffect(Unit) {
+        viewModel.eventos.collect { aviso ->
+            Notificador.mostrar(context, aviso)
+        }
+    }
+
     Column(modifier.fillMaxSize().background(Fondo)) {
         Box(
             modifier = Modifier
@@ -111,7 +117,15 @@ fun PantallaAvisos(viewModel: AvisosViewModel, modifier: Modifier = Modifier) {
                     Text(text = "Permitir notificaciones", color = Color.White)
                 }
             }
-            Tarjeta("Avisos")
+            Tarjeta("Avisos") {
+                Button(
+                    onClick = { viewModel.avisarAhora() },
+                    shape = RoundedCornerShape(50),
+                    colors = ButtonDefaults.buttonColors(containerColor = Azul)
+                ) {
+                    Text(text = "Mostrar aviso", color = Color.White)
+                }
+            }
             Tarjeta("Recordatorio")
             Tarjeta("Receptor de anuncios")
             Tarjeta("Historial")
