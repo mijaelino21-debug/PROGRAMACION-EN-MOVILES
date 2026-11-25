@@ -15,9 +15,11 @@ import androidx.core.content.ContextCompat
 import com.lino.avisoscampus.MainActivity
 import com.lino.avisoscampus.R
 import com.lino.avisoscampus.model.Aviso
+import com.lino.avisoscampus.model.Origen
 
 object Notificador {
     const val CANAL = "avisos"
+    const val CANAL_URGENTES = "urgentes"
 
     fun crearCanal(context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -28,8 +30,14 @@ object Notificador {
             ).apply {
                 description = "Notificaciones de la app"
             }
+            val urgentes = NotificationChannel(
+                CANAL_URGENTES,
+                "Urgentes",
+                NotificationManager.IMPORTANCE_HIGH
+            )
             val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             manager.createNotificationChannel(canal)
+            manager.createNotificationChannel(urgentes)
         }
     }
 
@@ -48,15 +56,20 @@ object Notificador {
     fun mostrar(context: Context, aviso: Aviso): Boolean {
         if (!tienePermiso(context)) return false
 
+        val urgente = aviso.origen == Origen.RECORDATORIO
+        val canal = if (urgente) CANAL_URGENTES else CANAL
+
         val intent = Intent(context, MainActivity::class.java)
         val pendiente = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_IMMUTABLE)
 
-        val notificacion = NotificationCompat.Builder(context, CANAL)
+        val notificacion = NotificationCompat.Builder(context, canal)
             .setSmallIcon(R.drawable.ic_notificacion)
             .setContentIntent(pendiente)
             .setContentTitle(aviso.titulo)
             .setContentText(aviso.texto)
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setPriority(
+                if (urgente) NotificationCompat.PRIORITY_HIGH else NotificationCompat.PRIORITY_DEFAULT
+            )
             .setAutoCancel(true)
             .build()
 
