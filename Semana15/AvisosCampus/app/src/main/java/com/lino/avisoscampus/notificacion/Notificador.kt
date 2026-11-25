@@ -70,6 +70,7 @@ object Notificador {
             .setPriority(
                 if (urgente) NotificationCompat.PRIORITY_HIGH else NotificationCompat.PRIORITY_DEFAULT
             )
+            .setStyle(NotificationCompat.BigTextStyle().bigText(aviso.texto))
             .setAutoCancel(true)
             .build()
 
