@@ -44,18 +44,26 @@ PostApi (Retrofit) --- OkHttp ---> https://jsonplaceholder.typicode.com/
 
 ## Capturas
 
-| Lista | Detalle | Filtro |
-|---|---|---|
-| ![Lista](<img width="199" height="416" alt="image" src="https://github.com/user-attachments/assets/708c6fcd-d679-4676-aaf1-834d0e7f8eca" />
-) | ![Detalle](<img width="196" height="411" alt="image" src="https://github.com/user-attachments/assets/f00c1f01-5be4-487a-a13d-56bf6b8a7a34" />
-) | ![Filtro](<img width="188" height="407" alt="image" src="https://github.com/user-attachments/assets/630f9df0-cbf6-45f1-8e79-16e3ce0161dc" />
-) |
+| Lista | 
 
-| Crear | Error de conexión |
-|---|---|
-| ![Crear](<img width="191" height="413" alt="image" src="https://github.com/user-attachments/assets/29585a36-eacd-449d-817c-9f2f9c277d56" />
-) | ![Error](<img width="193" height="411" alt="image" src="https://github.com/user-attachments/assets/72dc0bd6-b991-4b72-b41e-37351c339b5e" />
-) |
+<img width="199" height="416" alt="image" src="https://github.com/user-attachments/assets/708c6fcd-d679-4676-aaf1-834d0e7f8eca" />
+
+| Detalle |
+
+ <img width="196" height="411" alt="image" src="https://github.com/user-attachments/assets/f00c1f01-5be4-487a-a13d-56bf6b8a7a34" />
+ 
+| Filtro |
+
+<img width="188" height="407" alt="image" src="https://github.com/user-attachments/assets/630f9df0-cbf6-45f1-8e79-16e3ce0161dc" />
+
+
+| Crear | 
+
+<img width="191" height="413" alt="image" src="https://github.com/user-attachments/assets/29585a36-eacd-449d-817c-9f2f9c277d56" />
+
+| Error de conexión |
+
+<img width="193" height="411" alt="image" src="https://github.com/user-attachments/assets/72dc0bd6-b991-4b72-b41e-37351c339b5e" />
 
 ## Para pensar
 
