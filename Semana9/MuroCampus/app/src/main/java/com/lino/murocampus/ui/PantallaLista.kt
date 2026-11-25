@@ -6,13 +6,17 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -33,7 +37,27 @@ fun PantallaLista(
 ) {
     val estado by vm.lista.collectAsStateWithLifecycle()
     val filtro by vm.usuarioFiltro.collectAsStateWithLifecycle()
+    val busqueda by vm.busqueda.collectAsStateWithLifecycle()
     Column(modifier = Modifier.fillMaxSize().then(modifier)) {
+        OutlinedTextField(
+            value = busqueda,
+            onValueChange = { vm.buscar(it) },
+            label = { Text("Buscar por título") },
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp),
+            shape = RoundedCornerShape(10.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = AzulPrimario,
+                unfocusedBorderColor = BordeClaro
+            ),
+            trailingIcon = {
+                if (busqueda.isNotEmpty()) {
+                    TextButton(onClick = { vm.buscar("") }) {
+                        Text("Limpiar")
+                    }
+                }
+            },
+            singleLine = true
+        )
         LazyRow(
             contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -61,26 +85,39 @@ fun PantallaLista(
                     onReintentar = { vm.cargar() }
                 )
                 is UiState.Exito -> {
-                    if (estadoActual.datos.isEmpty()) {
-                        Box(
+                    when {
+                        estadoActual.datos.isEmpty() -> Box(
                             modifier = Modifier.fillMaxSize(),
                             contentAlignment = Alignment.Center
                         ) {
                             Text("Sin publicaciones")
                         }
-                    } else {
-                        LazyColumn(
-                            modifier = Modifier.fillMaxSize(),
-                            contentPadding = PaddingValues(12.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            items(items = estadoActual.datos, key = { it.id }) { post ->
-                                TarjetaPost(
-                                    userId = post.userId,
-                                    titulo = post.title,
-                                    cuerpo = post.body,
-                                    onClick = { onPostClick(post.id) }
-                                )
+                        else -> {
+                            val resultados = estadoActual.datos
+                                .filter { filtro == null || it.userId == filtro }
+                                .filter { it.title.contains(busqueda, ignoreCase = true) }
+                            if (resultados.isEmpty()) {
+                                Box(
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text("Sin resultados")
+                                }
+                            } else {
+                                LazyColumn(
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentPadding = PaddingValues(12.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    items(items = resultados, key = { it.id }) { post ->
+                                        TarjetaPost(
+                                            userId = post.userId,
+                                            titulo = post.title,
+                                            cuerpo = post.body,
+                                            onClick = { onPostClick(post.id) }
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
