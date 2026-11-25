@@ -63,6 +63,7 @@ fun PantallaAvisos(viewModel: AvisosViewModel, modifier: Modifier = Modifier) {
     val permiso by viewModel.permiso.collectAsState(initial = PermisoUi.SinPedir)
     val faltan by viewModel.faltan.collectAsState(initial = null)
     val escuchando by viewModel.escuchandoAvion.collectAsState(initial = false)
+    val avisos by viewModel.avisos.collectAsState()
     val receptor = remember {
         ModoAvionReceiver { activo -> viewModel.alCambiarModoAvion(activo) }
     }
@@ -219,7 +220,7 @@ fun PantallaAvisos(viewModel: AvisosViewModel, modifier: Modifier = Modifier) {
                     textAlign = TextAlign.Center
                 )
             }
-            Tarjeta("Historial")
+            HistorialAvisos(avisos = avisos)
         }
     }
 }
