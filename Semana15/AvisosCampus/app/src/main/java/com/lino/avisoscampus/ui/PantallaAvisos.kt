@@ -51,6 +51,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import com.lino.avisoscampus.model.PermisoUi
 import com.lino.avisoscampus.notificacion.Notificador
+import com.lino.avisoscampus.receiver.CargadorReceiver
 import com.lino.avisoscampus.receiver.ModoAvionReceiver
 import com.lino.avisoscampus.ui.theme.Azul
 import com.lino.avisoscampus.ui.theme.Fondo
@@ -64,10 +65,14 @@ fun PantallaAvisos(viewModel: AvisosViewModel, modifier: Modifier = Modifier) {
     val permiso by viewModel.permiso.collectAsState(initial = PermisoUi.SinPedir)
     val faltan by viewModel.faltan.collectAsState(initial = null)
     val escuchando by viewModel.escuchandoAvion.collectAsState(initial = false)
+    val escuchandoCargador by viewModel.escuchandoCargador.collectAsState(initial = false)
     val avisos by viewModel.avisos.collectAsState()
     val mensaje by viewModel.mensaje.collectAsState(initial = null)
     val receptor = remember {
         ModoAvionReceiver { activo -> viewModel.alCambiarModoAvion(activo) }
+    }
+    val receptorCargador = remember {
+        CargadorReceiver { activo -> viewModel.alCambiarCargador(activo) }
     }
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
         concedido -> viewModel.permisoRespondido(concedido)
@@ -96,6 +101,23 @@ fun PantallaAvisos(viewModel: AvisosViewModel, modifier: Modifier = Modifier) {
                 ContextCompat.RECEIVER_NOT_EXPORTED
             )
             onDispose { context.unregisterReceiver(receptor) }
+        } else {
+            onDispose { }
+        }
+    }
+
+    DisposableEffect(escuchandoCargador) {
+        if (escuchandoCargador) {
+            ContextCompat.registerReceiver(
+                context,
+                receptorCargador,
+                IntentFilter().apply {
+                    addAction(Intent.ACTION_POWER_CONNECTED)
+                    addAction(Intent.ACTION_POWER_DISCONNECTED)
+                },
+                ContextCompat.RECEIVER_NOT_EXPORTED
+            )
+            onDispose { context.unregisterReceiver(receptorCargador) }
         } else {
             onDispose { }
         }
@@ -257,6 +279,25 @@ fun PantallaAvisos(viewModel: AvisosViewModel, modifier: Modifier = Modifier) {
                     color = TextoSecundario,
                     textAlign = TextAlign.Center
                 )
+                Spacer(Modifier.height(8.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(text = "Escuchar el cargador", fontSize = 14.sp, color = TextoSecundario)
+                    Switch(
+                        checked = escuchandoCargador,
+                        onCheckedChange = { viewModel.cambiarEscuchaCargador(it) },
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = Color.White,
+                            checkedTrackColor = Azul,
+                            uncheckedThumbColor = Color(0xFF757575),
+                            uncheckedTrackColor = Color(0xFFE0E0E0),
+                            uncheckedBorderColor = Color(0xFF9E9E9E)
+                        )
+                    )
+                }
             }
             HistorialAvisos(avisos = avisos)
         }
