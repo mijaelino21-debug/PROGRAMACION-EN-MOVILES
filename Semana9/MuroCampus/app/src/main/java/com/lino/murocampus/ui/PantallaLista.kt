@@ -9,14 +9,19 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.lino.murocampus.ui.theme.AzulPrimario
+import com.lino.murocampus.ui.theme.BordeClaro
 import com.lino.murocampus.viewmodel.PostsViewModel
 import com.lino.murocampus.viewmodel.UiState
 
@@ -34,17 +39,17 @@ fun PantallaLista(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             item {
-                FilterChip(
-                    selected = filtro == null,
-                    onClick = { vm.filtrar(null) },
-                    label = { Text("Todos") }
+                ChipFiltro(
+                    etiqueta = "Todos",
+                    seleccionado = filtro == null,
+                    onClick = { vm.filtrar(null) }
                 )
             }
             items(items = (1..10).toList(), key = { it }) { id ->
-                FilterChip(
-                    selected = filtro == id,
-                    onClick = { vm.filtrar(id) },
-                    label = { Text("Usuario $id") }
+                ChipFiltro(
+                    etiqueta = "Usuario $id",
+                    seleccionado = filtro == id,
+                    onClick = { vm.filtrar(id) }
                 )
             }
         }
@@ -83,4 +88,31 @@ fun PantallaLista(
             }
         }
     }
+}
+
+@Composable
+private fun ChipFiltro(
+    etiqueta: String,
+    seleccionado: Boolean,
+    onClick: () -> Unit
+) {
+    FilterChip(
+        selected = seleccionado,
+        onClick = onClick,
+        label = { Text(etiqueta) },
+        leadingIcon = null,
+        shape = RoundedCornerShape(percent = 50),
+        colors = FilterChipDefaults.filterChipColors(
+            containerColor = Color.White,
+            labelColor = AzulPrimario,
+            selectedContainerColor = AzulPrimario,
+            selectedLabelColor = Color.White
+        ),
+        border = FilterChipDefaults.filterChipBorder(
+            enabled = true,
+            selected = seleccionado,
+            borderColor = BordeClaro,
+            selectedBorderColor = AzulPrimario
+        )
+    )
 }
