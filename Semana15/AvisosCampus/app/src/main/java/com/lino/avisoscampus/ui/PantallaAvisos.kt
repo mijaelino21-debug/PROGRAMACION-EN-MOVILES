@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
+import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
@@ -64,6 +65,7 @@ fun PantallaAvisos(viewModel: AvisosViewModel, modifier: Modifier = Modifier) {
     val faltan by viewModel.faltan.collectAsState(initial = null)
     val escuchando by viewModel.escuchandoAvion.collectAsState(initial = false)
     val avisos by viewModel.avisos.collectAsState()
+    val mensaje by viewModel.mensaje.collectAsState(initial = null)
     val receptor = remember {
         ModoAvionReceiver { activo -> viewModel.alCambiarModoAvion(activo) }
     }
@@ -79,7 +81,9 @@ fun PantallaAvisos(viewModel: AvisosViewModel, modifier: Modifier = Modifier) {
 
     LaunchedEffect(Unit) {
         viewModel.eventos.collect { aviso ->
-            Notificador.mostrar(context, aviso)
+            if (!Notificador.mostrar(context, aviso)) {
+                viewModel.noSePudoMostrar()
+            }
         }
     }
 
@@ -145,6 +149,40 @@ fun PantallaAvisos(viewModel: AvisosViewModel, modifier: Modifier = Modifier) {
                     colors = ButtonDefaults.buttonColors(containerColor = Azul)
                 ) {
                     Text(text = "Permitir notificaciones", color = Color.White)
+                }
+            }
+            mensaje?.let { texto ->
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Color(0xFFFDE7E9), RoundedCornerShape(12.dp))
+                            .padding(16.dp)
+                    ) {
+                        Text(
+                            text = texto,
+                            modifier = Modifier.fillMaxWidth(),
+                            color = Color(0xFFB3261E),
+                            fontSize = 14.sp,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                    Spacer(Modifier.height(12.dp))
+                    OutlinedButton(
+                        onClick = {
+                            val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+                                .putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+                            context.startActivity(intent)
+                        },
+                        shape = RoundedCornerShape(50),
+                        border = BorderStroke(1.dp, Azul),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Azul)
+                    ) {
+                        Text(text = "Abrir ajustes")
+                    }
                 }
             }
             Tarjeta("Avisos") {
