@@ -1,37 +1,66 @@
 package com.lino.avisoscampus.ui
 
+import android.Manifest
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.lino.avisoscampus.model.PermisoUi
+import com.lino.avisoscampus.notificacion.Notificador
 import com.lino.avisoscampus.ui.theme.Azul
 import com.lino.avisoscampus.ui.theme.Fondo
 import com.lino.avisoscampus.ui.theme.GrisClaro
+import com.lino.avisoscampus.ui.theme.TextoSecundario
 import com.lino.avisoscampus.viewmodel.AvisosViewModel
 
 @Composable
 fun PantallaAvisos(viewModel: AvisosViewModel, modifier: Modifier = Modifier) {
+    val context = LocalContext.current
+    val permiso by viewModel.permiso.collectAsState(initial = PermisoUi.SinPedir)
+    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
+        concedido -> viewModel.permisoRespondido(concedido)
+    }
+
+    LaunchedEffect(Unit) {
+        if (Notificador.tienePermiso(context)) {
+            viewModel.permisoRespondido(true)
+        }
+    }
+
     Column(modifier.fillMaxSize().background(Fondo)) {
         Box(
             modifier = Modifier
@@ -57,7 +86,31 @@ fun PantallaAvisos(viewModel: AvisosViewModel, modifier: Modifier = Modifier) {
             verticalArrangement = Arrangement.spacedBy(16.dp),
             horizontalAlignment = Alignment.Start
         ) {
-            Tarjeta("Permiso de notificaciones")
+            Tarjeta("Permiso de notificaciones") {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(text = "Estado:", color = TextoSecundario, fontSize = 14.sp)
+                    Spacer(Modifier.width(8.dp))
+                    EtiquetaPermiso(permiso)
+                }
+                Spacer(Modifier.height(12.dp))
+                Button(
+                    onClick = {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                            launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                        } else {
+                            viewModel.permisoRespondido(true)
+                        }
+                    },
+                    shape = RoundedCornerShape(50),
+                    colors = ButtonDefaults.buttonColors(containerColor = Azul)
+                ) {
+                    Text(text = "Permitir notificaciones", color = Color.White)
+                }
+            }
             Tarjeta("Avisos")
             Tarjeta("Recordatorio")
             Tarjeta("Receptor de anuncios")
@@ -67,7 +120,25 @@ fun PantallaAvisos(viewModel: AvisosViewModel, modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun Tarjeta(titulo: String) {
+private fun EtiquetaPermiso(permiso: PermisoUi) {
+    val (texto, fondo, colorTexto) = when (permiso) {
+        PermisoUi.SinPedir -> Triple("Sin pedir", Color(0xFFECECEC), TextoSecundario)
+        PermisoUi.Concedido -> Triple("Permitido", Color(0xFFDDF3E4), Color(0xFF237A3C))
+        PermisoUi.Denegado -> Triple("Denegado", Color(0xFFFDE7E9), Color(0xFFB3261E))
+    }
+    Text(
+        text = texto,
+        color = colorTexto,
+        fontSize = 14.sp,
+        fontWeight = FontWeight.Medium,
+        modifier = Modifier
+            .background(fondo, RoundedCornerShape(50))
+            .padding(horizontal = 12.dp, vertical = 4.dp)
+    )
+}
+
+@Composable
+private fun Tarjeta(titulo: String, contenido: (@Composable () -> Unit)? = null) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -84,6 +155,15 @@ private fun Tarjeta(titulo: String) {
                 fontWeight = FontWeight.Bold,
                 fontSize = 18.sp
             )
+            if (contenido != null) {
+                Spacer(Modifier.height(12.dp))
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    contenido()
+                }
+            }
         }
     }
 }
