@@ -66,7 +66,12 @@ class MainActivity : ComponentActivity() {
                                 idSeleccionado = id
                             }
                         )
-                        else -> PantallaDetalle(vm = vm, id = seleccionado, modifier = modifier)
+                        else -> PantallaDetalle(
+                            vm = vm,
+                            id = seleccionado,
+                            modifier = modifier,
+                            onVolverLista = { idSeleccionado = null }
+                        )
                     }
                 }
             }
