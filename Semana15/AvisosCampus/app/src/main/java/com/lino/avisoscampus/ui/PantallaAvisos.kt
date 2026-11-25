@@ -1,6 +1,8 @@
 package com.lino.avisoscampus.ui
 
 import android.Manifest
+import android.content.Intent
+import android.content.IntentFilter
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -28,20 +30,27 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import com.lino.avisoscampus.model.PermisoUi
 import com.lino.avisoscampus.notificacion.Notificador
+import com.lino.avisoscampus.receiver.ModoAvionReceiver
 import com.lino.avisoscampus.ui.theme.Azul
 import com.lino.avisoscampus.ui.theme.Fondo
 import com.lino.avisoscampus.ui.theme.GrisClaro
@@ -53,6 +62,10 @@ fun PantallaAvisos(viewModel: AvisosViewModel, modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val permiso by viewModel.permiso.collectAsState(initial = PermisoUi.SinPedir)
     val faltan by viewModel.faltan.collectAsState(initial = null)
+    val escuchando by viewModel.escuchandoAvion.collectAsState(initial = false)
+    val receptor = remember {
+        ModoAvionReceiver { activo -> viewModel.alCambiarModoAvion(activo) }
+    }
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
         concedido -> viewModel.permisoRespondido(concedido)
     }
@@ -66,6 +79,20 @@ fun PantallaAvisos(viewModel: AvisosViewModel, modifier: Modifier = Modifier) {
     LaunchedEffect(Unit) {
         viewModel.eventos.collect { aviso ->
             Notificador.mostrar(context, aviso)
+        }
+    }
+
+    DisposableEffect(escuchando) {
+        if (escuchando) {
+            ContextCompat.registerReceiver(
+                context,
+                receptor,
+                IntentFilter(Intent.ACTION_AIRPLANE_MODE_CHANGED),
+                ContextCompat.RECEIVER_NOT_EXPORTED
+            )
+            onDispose { context.unregisterReceiver(receptor) }
+        } else {
+            onDispose { }
         }
     }
 
@@ -164,7 +191,34 @@ fun PantallaAvisos(viewModel: AvisosViewModel, modifier: Modifier = Modifier) {
                     )
                 }
             }
-            Tarjeta("Receptor de anuncios")
+            Tarjeta("Receptor de anuncios") {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(text = "Escuchar el modo avión", fontSize = 14.sp, color = TextoSecundario)
+                    Switch(
+                        checked = escuchando,
+                        onCheckedChange = { viewModel.cambiarEscucha(it) },
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = Color.White,
+                            checkedTrackColor = Azul,
+                            uncheckedThumbColor = Color(0xFF757575),
+                            uncheckedTrackColor = Color(0xFFE0E0E0),
+                            uncheckedBorderColor = Color(0xFF9E9E9E)
+                        )
+                    )
+                }
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    text = "Activa o desactiva el modo avión del celular",
+                    modifier = Modifier.fillMaxWidth(),
+                    fontSize = 12.sp,
+                    color = TextoSecundario,
+                    textAlign = TextAlign.Center
+                )
+            }
             Tarjeta("Historial")
         }
     }
