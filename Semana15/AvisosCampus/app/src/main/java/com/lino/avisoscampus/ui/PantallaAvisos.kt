@@ -27,6 +27,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -51,6 +52,7 @@ import com.lino.avisoscampus.viewmodel.AvisosViewModel
 fun PantallaAvisos(viewModel: AvisosViewModel, modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val permiso by viewModel.permiso.collectAsState(initial = PermisoUi.SinPedir)
+    val faltan by viewModel.faltan.collectAsState(initial = null)
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
         concedido -> viewModel.permisoRespondido(concedido)
     }
@@ -126,7 +128,42 @@ fun PantallaAvisos(viewModel: AvisosViewModel, modifier: Modifier = Modifier) {
                     Text(text = "Mostrar aviso", color = Color.White)
                 }
             }
-            Tarjeta("Recordatorio")
+            Tarjeta("Recordatorio") {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Button(
+                        onClick = { viewModel.recordarEn() },
+                        enabled = faltan == null,
+                        shape = RoundedCornerShape(50),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Azul,
+                            disabledContainerColor = Color(0xFFBDBDBD),
+                            disabledContentColor = Color.White
+                        )
+                    ) {
+                        Text(text = "Recordar en 10 s", color = Color.White)
+                    }
+                    OutlinedButton(
+                        onClick = { viewModel.cancelarRecordatorio() },
+                        enabled = faltan != null,
+                        shape = RoundedCornerShape(50),
+                        border = BorderStroke(1.dp, Azul),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Azul)
+                    ) {
+                        Text(text = "Cancelar")
+                    }
+                }
+                faltan?.let {
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        text = "Faltan $it s",
+                        fontWeight = FontWeight.Bold,
+                        color = Azul
+                    )
+                }
+            }
             Tarjeta("Receptor de anuncios")
             Tarjeta("Historial")
         }
