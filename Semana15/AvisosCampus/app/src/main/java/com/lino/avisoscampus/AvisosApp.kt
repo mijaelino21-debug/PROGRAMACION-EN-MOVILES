@@ -1,10 +1,11 @@
 package com.lino.avisoscampus
 
 import android.app.Application
+import com.lino.avisoscampus.notificacion.Notificador
 
 class AvisosApp : Application() {
     override fun onCreate() {
         super.onCreate()
-        TODO("Inicialización de AvisosCampus")
+        Notificador.crearCanal(this)
     }
 }
